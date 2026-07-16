@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JumpSync — Stable Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Monsieur+La+Doulaise&family=Mrs+Saint+Delafield&family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f8f6;            /* soft white-green */
+    --paper: #fdfefd;
+    --mist: #e7eef0;          /* pale blue-grey */
+    --blue: #a9c4ce;          /* light blue */
+    --blue-deep: #6e8f9c;
+    --sage: #a9c0ab;          /* light green */
+    --sage-deep: #5f7a66;
+    --grey: #a7b0b3;
+    --ink: #3c4b4e;
+    --ink-soft: #71817f;
+    --gold: #b9a77a;          /* subtle antique accent */
+    --danger: #a05a56;
+    --warn: #b08b4f;
+    --border: #d8e2e0;
+    --radius: 10px;
+    --shadow: 0 2px 6px rgba(60,75,78,.07), 0 10px 24px rgba(60,75,78,.05);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --script: 'Monsieur La Doulaise', 'Mrs Saint Delafield', 'Great Vibes', cursive;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--serif);
+    background:
+      radial-gradient(#3c4b4e05 1px, transparent 1px),
+      radial-gradient(ellipse at 20% 0%, rgba(169,196,206,.20), transparent 55%),
+      radial-gradient(ellipse at 85% 100%, rgba(169,192,171,.20), transparent 55%),
+      var(--bg);
+    background-size: 9px 9px, auto, auto, auto;
+    color: var(--ink); line-height: 1.55; font-size: 17px; min-height: 100vh;
+  }
+  ::selection { background: var(--blue); color: #fff; }
+  * { scrollbar-width: thin; scrollbar-color: var(--grey) transparent; }
+
+  /* ---------- Header ---------- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 22px; gap: 12px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border); background: rgba(253,254,253,.85);
+    backdrop-filter: blur(6px); position: relative;
+  }
+  header::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+    opacity: .5;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .brand .logo-sm { width: 44px; height: 44px; }
+  .brand .name { font-family: var(--script); font-size: 2.3rem; color: var(--blue-deep); line-height: 1; }
+  .brand .tag { font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-soft); }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .user-chip {
+    font-size: .8rem; letter-spacing: .08em; color: var(--ink-soft);
+    border: 1px solid var(--border); border-radius: 999px; padding: 5px 14px; background: var(--paper);
+  }
+  .user-chip b { color: var(--sage-deep); font-weight: 600; }
+  .hbtn {
+    background: none; border: 1px solid var(--border); color: var(--ink-soft);
+    padding: 5px 12px; border-radius: 999px; cursor: pointer; font-family: var(--serif); font-size: .8rem;
+    letter-spacing: .06em;
+  }
+  .hbtn:hover { border-color: var(--blue-deep); color: var(--blue-deep); }
+
+  main { max-width: 980px; margin: 0 auto; padding: 26px 18px 70px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ---------- Home / portal ---------- */
+  #view-home { text-align: center; }
+  .home-logo {
+    width: 170px; height: 170px; margin: 18px auto 6px; display: block;
+    filter: drop-shadow(0 6px 14px rgba(60,75,78,.15));
+    animation: logoIn .8s cubic-bezier(.2,.8,.3,1.1) both;
+  }
+  @keyframes logoIn {
+    from { opacity: 0; transform: scale(.85) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .home-name { animation: fadeUp .6s ease .15s both; }
+  .home-sub { animation: fadeUp .6s ease .25s both; }
+  .flourish { animation: fadeUp .6s ease .35s both; }
+  .home-name {
+    font-family: var(--script); font-size: 5rem; color: var(--blue-deep); line-height: 1.1;
+  }
+  .home-name .edit-name { font-size: 1rem; vertical-align: middle; cursor: pointer; opacity: .45; margin-left: 8px; font-family: var(--serif); }
+  .home-sub {
+    font-size: .85rem; letter-spacing: .32em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px;
+  }
+  .flourish { display: flex; align-items: center; gap: 14px; justify-content: center; margin: 14px auto 30px; max-width: 420px; color: var(--gold); }
+  .flourish::before, .flourish::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .flourish::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .portal-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px; max-width: 860px; margin: 0 auto; text-align: center;
+  }
+  .tile {
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px 14px 20px; cursor: pointer; box-shadow: var(--shadow);
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; position: relative;
+    animation: fadeUp .5s ease both;
+  }
+  .tile:nth-child(2) { animation-delay: .05s; } .tile:nth-child(3) { animation-delay: .1s; }
+  .tile:nth-child(4) { animation-delay: .15s; } .tile:nth-child(5) { animation-delay: .2s; }
+  .tile:nth-child(6) { animation-delay: .25s; } .tile:nth-child(7) { animation-delay: .3s; }
+  .tile:nth-child(8) { animation-delay: .35s; } .tile:nth-child(9) { animation-delay: .4s; }
+  .tile:hover {
+    transform: translateY(-4px); border-color: var(--gold);
+    box-shadow: 0 6px 14px rgba(60,75,78,.12), 0 18px 40px rgba(60,75,78,.10);
+  }
+  .tile::before {
+    content: ''; position: absolute; inset: 5px; border: 1px solid var(--mist); border-radius: 7px;
+    pointer-events: none; transition: border-color .22s ease;
+  }
+  .tile:hover::before { border-color: #e6dcc4; }
+  .tile .t-icon { width: 58px; height: 58px; margin: 0 auto 10px; display: block; transition: transform .25s ease; }
+  .tile:hover .t-icon { transform: scale(1.08) rotate(-2deg); }
+  .tile .t-name { font-size: 1.35rem; font-weight: 600; color: var(--ink); }
+  .tile .t-desc { font-size: .8rem; color: var(--ink-soft); letter-spacing: .04em; }
+  .tile .t-lock { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-top: 6px; }
+
+  /* ---------- Shared components ---------- */
+  .view-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .view-head h2 {
+    font-family: var(--script); font-size: 3.1rem; font-weight: 400; color: var(--blue-deep);
+    position: relative; padding-bottom: 6px;
+  }
+  .view-head h2::after {
+    content: ''; position: absolute; left: 2px; bottom: 0; width: 70%; height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent); opacity: .7;
+  }
+  .back { background: none; border: none; color: var(--ink-soft); font-family: var(--serif); cursor: pointer; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; padding: 0; }
+  .back:hover { color: var(--blue-deep); }
+  .card {
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; margin-bottom: 14px; box-shadow: var(--shadow);
+    animation: fadeUp .4s ease both;
+  }
+  .view.active > *, .view.active .grid > * { animation: fadeUp .4s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  .btn {
+    background: var(--sage-deep); color: #fff; border: none; padding: 8px 18px;
+    border-radius: 999px; cursor: pointer; font-family: var(--serif);
+    letter-spacing: .1em; text-transform: uppercase; font-size: .78rem;
+    transition: background .2s ease, transform .15s ease, box-shadow .2s ease;
+  }
+  .btn:hover { background: var(--blue-deep); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(60,75,78,.18); }
+  .btn:active { transform: translateY(0); }
+  .btn.secondary { background: none; color: var(--sage-deep); border: 1px solid var(--sage-deep); }
+  .btn.secondary:hover { color: var(--blue-deep); border-color: var(--blue-deep); background: none; }
+  .btn.small { padding: 4px 12px; font-size: .75rem; }
+  .btn.danger { background: none; color: var(--danger); border: 1px solid var(--danger); }
+  .btn.danger:hover { background: var(--danger); color: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .meta { font-size: .85rem; color: var(--ink-soft); }
+  .badge {
+    display: inline-block; padding: 1px 11px; border-radius: 999px; font-size: .68rem;
+    letter-spacing: .12em; text-transform: uppercase; border: 1px solid currentColor;
+  }
+  .badge.overdue { color: var(--danger); background: #f6ecea; }
+  .badge.soon { color: var(--warn); background: #f5efe2; }
+  .badge.ok { color: var(--sage-deep); background: #ecf2ec; }
+  .badge.type { color: var(--blue-deep); background: var(--mist); border-color: transparent; }
+  .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .list-item { padding: 12px 0; border-bottom: 1px solid var(--mist); }
+  .list-item:last-child { border-bottom: none; }
+  .empty { text-align: center; color: var(--ink-soft); padding: 36px 20px; font-style: italic; }
+  .empty::before { content: '❧'; display: block; font-size: 1.7rem; color: var(--gold); opacity: .55; margin-bottom: 6px; font-style: normal; }
+  .section-title { font-size: .78rem; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft); margin: 24px 0 10px; }
+  h3.entity { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; color: var(--blue-deep); }
+
+  /* ---------- Horse profiles ---------- */
+  .photo-row { display: flex; gap: 14px; align-items: center; margin: 8px 0; }
+  .photo-thumb { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+  .hphoto { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--mist); }
+  .hphoto-ph {
+    width: 100%; height: 110px; border-radius: 8px; margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--mist), #e9efe9 60%, #eee9dd);
+    display: flex; align-items: center; justify-content: center;
+    border: 1px dashed var(--border);
+  }
+  .hphoto-ph svg { width: 74px; height: 74px; opacity: .55; }
+  .hero { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+  .hero img { width: 190px; height: 190px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+  .hero .hero-info { flex: 1; min-width: 220px; }
+  .showname { font-style: italic; color: var(--ink-soft); font-size: 1.05rem; }
+  .kv { display: grid; grid-template-columns: 150px 1fr; gap: 6px 14px; margin-top: 8px; }
+  .kv dt { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); padding-top: 3px; }
+  .kv dd { margin: 0; font-size: .98rem; white-space: pre-wrap; }
+  .assigned-badge { background: #ecf2ec; color: var(--sage-deep); border-color: transparent; }
+  @media (max-width: 480px) { .kv { grid-template-columns: 1fr; gap: 0 0; } .kv dd { margin-bottom: 8px; } }
+
+  /* ---------- Calendar ---------- */
+  .cal-head { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 14px; }
+  .cal-head h3 { font-family: var(--script); font-size: 2.4rem; font-weight: 400; color: var(--sage-deep); min-width: 240px; text-align: center; }
+  .cal-nav { background: none; border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; color: var(--ink-soft); font-size: 1rem; }
+  .cal-nav:hover { border-color: var(--blue-deep); color: var(--blue-deep); }
+  table.cal { width: 100%; border-collapse: collapse; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  table.cal th {
+    font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft);
+    padding: 10px 4px; border-bottom: 1px solid var(--border); font-weight: 500;
+    background: linear-gradient(180deg, #f4f7f4, #eef2ef);
+  }
+  table.cal td {
+    width: 14.28%; height: 74px; vertical-align: top; border: 1px solid var(--mist);
+    padding: 4px 6px; cursor: pointer; font-size: .85rem;
+    transition: background .15s ease;
+  }
+  table.cal td:hover { background: var(--mist); }
+  table.cal td.other { color: #c4cdcc; background: #fafcfb; }
+  table.cal td.today { background: #f0f5f2; box-shadow: inset 0 0 0 1.5px var(--sage); }
+  table.cal td.today .dnum { background: var(--blue-deep); color: #fff; }
+  .dnum { display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center; border-radius: 50%; font-weight: 600; }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin: 2px 1px 0 0; }
+  .dot.event { background: var(--blue-deep); }
+  .dot.health { background: var(--warn); }
+  .dot.ride { background: var(--sage-deep); }
+  .care-alert {
+    background: #f5efe2; border: 1px solid #e3d5b3; color: #7d6538;
+    border-radius: 8px; padding: 9px 14px; margin-top: 10px; font-size: .95rem;
+  }
+  .care-alert strong { color: #6b5426; }
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 8px 20px; border-radius: 999px;
+    font-size: .85rem; letter-spacing: .06em; opacity: 0; transition: opacity .3s;
+    pointer-events: none; z-index: 300;
+  }
+  .toast.show { opacity: .93; }
+  /* ---------- Ride stats ---------- */
+  .stat-row { padding: 12px 0; border-bottom: 1px solid var(--mist); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .sr-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+  .stat-row .sr-name { font-weight: 600; font-size: 1.1rem; color: var(--blue-deep); }
+  .statbar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; background: #f2f4f1; }
+  .statbar .seg { height: 100%; }
+  .seg.jump { background: var(--blue-deep); }
+  .seg.flat { background: var(--sage-deep); }
+  .seg.oth  { background: var(--grey); }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; font-size: .8rem; color: var(--ink-soft); }
+  .legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+  /* ---------- Ribbons (US placing colors) ---------- */
+  .ribbon {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 27px; height: 27px; border-radius: 50%; color: #fff;
+    font-size: .8rem; font-weight: 700; padding: 0 5px; box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  }
+  .r1 { background: #2e5d9e; } .r2 { background: #a54843; } .r3 { background: #c9a63c; }
+  .r4 { background: #f7f5ef; color: #8a8577; border: 1px solid var(--border); }
+  .r5 { background: #d493a4; } .r6 { background: #5f7a66; }
+  .r7 { background: #7d5b8f; } .r8 { background: #8a6d47; } .r0 { background: var(--grey); }
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--mist); }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank { font-family: var(--script); font-size: 1.6rem; color: var(--gold); min-width: 34px; text-align: center; }
+  .lb-pts { margin-left: auto; font-weight: 600; color: var(--blue-deep); white-space: nowrap; }
+  .day-detail { margin-top: 14px; }
+
+  /* ---------- Messages ---------- */
+  .msg { padding: 12px 14px; border: 1px solid var(--mist); border-radius: var(--radius); margin-bottom: 10px; background: var(--paper); }
+  .msg .who { font-weight: 600; color: var(--sage-deep); }
+  .msg .when { font-size: .75rem; color: var(--ink-soft); font-style: italic; }
+  .msg-compose { display: flex; gap: 10px; align-items: flex-end; }
+  .msg-compose textarea { flex: 1; }
+  .dm-thread { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .bubble { max-width: 78%; padding: 8px 14px; border-radius: 14px; font-size: .95rem; }
+  .bubble.mine { align-self: flex-end; background: var(--sage-deep); color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.theirs { align-self: flex-start; background: var(--mist); border-bottom-left-radius: 4px; }
+  .bubble .b-meta { font-size: .68rem; opacity: .75; margin-top: 2px; }
+
+  /* ---------- Forms / modal ---------- */
+  .modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(60,75,78,.4);
+    z-index: 100; align-items: flex-start; justify-content: center; padding: 34px 16px; overflow-y: auto;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--paper); border-radius: var(--radius); padding: 26px;
+    width: 100%; max-width: 480px; box-shadow: 0 14px 50px rgba(0,0,0,.22);
+    border: 1px solid var(--border);
+    animation: modalIn .28s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(14px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal h3 {
+    font-family: var(--script); font-size: 2.4rem; font-weight: 400; color: var(--blue-deep);
+    margin-bottom: 12px; padding-bottom: 8px; position: relative;
+  }
+  .modal h3::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 90px; height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  label { display: block; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); margin: 12px 0 4px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 1rem; font-family: var(--serif); background: #fbfdfc; color: var(--ink);
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); border-color: transparent; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .filter-bar select { max-width: 260px; margin-bottom: 12px; }
+  @media (max-width: 520px) {
+    .form-row { grid-template-columns: 1fr; }
+    .home-name { font-size: 3.4rem; }
+    table.cal td { height: 58px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Dapple grey pony logo -->
+<svg id="ponyDef" width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="pony">
+      <circle cx="60" cy="60" r="57" fill="#eef3f2" stroke="#a9c4ce" stroke-width="2.5"/>
+      <circle cx="60" cy="60" r="51" fill="none" stroke="#c9d8d3" stroke-width="1" stroke-dasharray="2 4"/>
+      <!-- neck & head -->
+      <path d="M38 96 C40 74 44 60 54 48 C60 41 67 36 74 35 C80 34.5 85 37 87 42 C89 46.5 88 50 85 52 C88 55 88.5 59 86 61.5 C83 64.5 78 64 74 62 C72 65 69 67 66 68 C58 71 54 78 53 86 C52.5 90 52 93.5 52 96 Z" fill="#c3cdd0"/>
+      <!-- muzzle shading -->
+      <path d="M80 44 C84 44 87 47 86.5 51 C86 54.5 82 56 78.5 55 C76 54.2 74.5 51.5 75.5 48.5 C76.5 45.8 78 44 80 44 Z" fill="#aab6ba"/>
+      <!-- mane -->
+      <path d="M56 46 C60 38 66 33.5 73 33 C69 30 62 30.5 57 34.5 C52 38.5 49 45 48 52 C50 49.5 53 47.5 56 46 Z" fill="#8fa0a5"/>
+      <path d="M50 55 C47 60 45 67 44 75 C46.5 71 49.5 67.5 52.5 65 C51 62 50 58.5 50 55 Z" fill="#8fa0a5"/>
+      <!-- ear -->
+      <path d="M67 36 L71 27 L75 35 Z" fill="#c3cdd0" stroke="#8fa0a5" stroke-width="1"/>
+      <!-- dapples -->
+      <circle cx="55" cy="60" r="3" fill="#e8edee"/>
+      <circle cx="61" cy="54" r="2.4" fill="#e8edee"/>
+      <circle cx="49" cy="70" r="2.8" fill="#e8edee"/>
+      <circle cx="56" cy="76" r="2.2" fill="#e8edee"/>
+      <circle cx="47" cy="84" r="2.6" fill="#e8edee"/>
+      <circle cx="63" cy="47" r="1.8" fill="#e8edee"/>
+      <circle cx="70" cy="52" r="2" fill="#e8edee"/>
+      <!-- eye & nostril -->
+      <circle cx="72" cy="44" r="2.2" fill="#3c4b4e"/>
+      <circle cx="82.5" cy="50" r="1.3" fill="#71817f"/>
+      <!-- laurel -->
+      <path d="M25 78 Q30 90 42 97 M95 78 Q90 90 78 97" fill="none" stroke="#a9c0ab" stroke-width="2" stroke-linecap="round"/>
+      <g fill="#a9c0ab">
+        <ellipse cx="27" cy="83" rx="4" ry="1.8" transform="rotate(55 27 83)"/>
+        <ellipse cx="32" cy="90" rx="4" ry="1.8" transform="rotate(45 32 90)"/>
+        <ellipse cx="39" cy="95" rx="4" ry="1.8" transform="rotate(25 39 95)"/>
+        <ellipse cx="93" cy="83" rx="4" ry="1.8" transform="rotate(-55 93 83)"/>
+        <ellipse cx="88" cy="90" rx="4" ry="1.8" transform="rotate(-45 88 90)"/>
+        <ellipse cx="81" cy="95" rx="4" ry="1.8" transform="rotate(-25 81 95)"/>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<header id="siteHeader" style="display:none">
+  <div class="brand" onclick="showView('home')" title="Back to home">
+    <svg class="logo-sm" viewBox="0 0 120 120"><use href="#pony"/></svg>
+    <div>
+      <div class="name" id="brandName">JumpSync</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="user-chip" id="userChip"></span>
+    <button class="hbtn" onclick="openLogin()">Switch user</button>
+    <button class="hbtn" onclick="exportData()">Export</button>
+    <button class="hbtn" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="hbtn" id="fileBtn" style="display:none"></button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <div id="view-home" class="view">
+    <svg class="home-logo" viewBox="0 0 120 120"><use href="#pony"/></svg>
+    <div class="home-name"><span id="homeName">JumpSync</span><span class="edit-name" onclick="renameBarn()" title="Rename">✎ rename</span></div>
+    <div class="home-sub">est. 2026 · stable management portal</div>
+    <div class="flourish">❦</div>
+    <div class="portal-grid" id="portalGrid"></div>
+    <div id="weatherCard" style="max-width:860px;margin:20px auto 0;text-align:left"></div>
+  </div>
+
+  <!-- RESULTS & POINTS -->
+  <div id="view-results" class="view">
+    <div class="view-head">
+      <h2>Results &amp; Points</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="addResultBtn" onclick="openResultForm()">+ Add result</button>
+        <button class="back" onclick="showView('home')">← Home</button>
+      </div>
+    </div>
+    <div id="resultsList"></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="view-calendar" class="view">
+    <div class="view-head">
+      <h2>Calendar</h2>
+      <div><button class="back" onclick="showView('home')">← Home</button></div>
+    </div>
+    <div class="cal-head">
+      <button class="cal-nav" onclick="calShift(-1)">‹</button>
+      <h3 id="calTitle"></h3>
+      <button class="cal-nav" onclick="calShift(1)">›</button>
+    </div>
+    <table class="cal">
+      <thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>
+      <tbody id="calBody"></tbody>
+    </table>
+    <div class="day-detail" id="dayDetail"></div>
+  </div>
+
+  <!-- HORSES -->
+  <div id="view-horses" class="view">
+    <div class="view-head">
+      <h2>Horses</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="addHorseBtn" onclick="openHorseForm()">+ Add horse</button>
+        <button class="back" onclick="showView('home')">← Home</button>
+      </div>
+    </div>
+    <div class="grid" id="horseList"></div>
+    <div id="horseDetail"></div>
+  </div>
+
+  <!-- RIDERS -->
+  <div id="view-riders" class="view">
+    <div class="view-head">
+      <h2>Rider Profiles</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" onclick="openRiderForm()">+ Add rider</button>
+        <button class="back" onclick="showView('home')">← Home</button>
+      </div>
+    </div>
+    <div class="grid" id="riderList"></div>
+  </div>
+
+  <!-- CONTACTS -->
+  <div id="view-contacts" class="view">
+    <div class="view-head">
+      <h2>Contacts</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" onclick="openContactForm()">+ Add contact</button>
+        <button class="back" onclick="showView('home')">← Home</button>
+      </div>
+    </div>
+    <div class="grid" id="contactList"></div>
+  </div>
+
+  <!-- EVENTS -->
+  <div id="view-events" class="view">
+    <div class="view-head">
+      <h2>Upcoming Events</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="addEventBtn" onclick="openEventForm()">+ Add event</button>
+        <button class="back" onclick="showView('home')">← Home</button>
+      </div>
+    </div>
+    <div class="card" id="eventList"></div>
+  </div>
+
+  <!-- SHOW BULLETIN -->
+  <div id="view-bulletin" class="view">
+    <div class="view-head">
+      <h2>Show Bulletin</h2>
+      <div><button class="back" onclick="showView('home')">← Home</button></div>
+    </div>
+    <div id="bulletinList"></div>
+  </div>
+
+  <!-- BILLING -->
+  <div id="view-billing" class="view">
+    <div class="view-head">
+      <h2>Billing</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="addChargeBtn" onclick="openChargeForm()">+ Add charge</button>
+        <button class="btn secondary" id="addPaymentBtn" onclick="openPaymentForm()">+ Record payment</button>
+        <button class="back" onclick="showView('home')">← Home</button>
+      </div>
+    </div>
+    <div id="billingList"></div>
+  </div>
+
+  <!-- RIDE STATS -->
+  <div id="view-stats" class="view">
+    <div class="view-head">
+      <h2>Ride Stats</h2>
+      <div><button class="back" onclick="showView('home')">← Home</button></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="statPeriods"></div>
+    <div class="card" id="statChart"></div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div id="view-messages" class="view">
+    <div class="view-head">
+      <h2>Message Portal</h2>
+      <div><button class="back" onclick="showView('home')">← Home</button></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn small" id="tabBoardBtn" onclick="setMsgTab('board')">Barn board</button>
+      <button class="btn small secondary" id="tabDmBtn" onclick="setMsgTab('dm')">Private messages</button>
+    </div>
+    <div id="boardPane">
+      <div class="card">
+        <div class="msg-compose">
+          <textarea id="msgText" rows="2" placeholder="Post a note to the barn…"></textarea>
+          <button class="btn" onclick="postMessage_()">Post</button>
+        </div>
+      </div>
+      <div id="msgList"></div>
+    </div>
+    <div id="dmPane" style="display:none">
+      <div class="card">
+        <label>Conversation</label>
+        <select id="dmPartner" onchange="dmPartnerChanged()"></select>
+        <div id="dmThread" class="dm-thread"></div>
+        <div id="dmComposeWrap" class="msg-compose" style="margin-top:10px">
+          <textarea id="dmText" rows="2" placeholder="Write privately…"></textarea>
+          <button class="btn" onclick="sendDm()">Send</button>
+        </div>
+        <div id="dmReadOnly" class="meta" style="display:none;font-style:italic;margin-top:8px">You're viewing this conversation as manager — pick a person under "Message someone" to reply directly.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modals -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalBox"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ Data layer ============
+const STORE_KEY = 'equitrack-data-v1';
+let db = { horses: [], health: [], rides: [], events: [], riders: [], messages: [], contacts: [], dms: [], ledger: [], results: [], settings: {} };
+
+function load() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); }
+  catch (e) { console.warn('load failed', e); }
+  db.settings = db.settings || {};
+  db.contacts = db.contacts || [];
+  db.dms = db.dms || [];
+  db.ledger = db.ledger || [];
+  db.results = db.results || [];
+  // migrate old single feeding field into the new grain field
+  db.horses.forEach(h => {
+    if (h.feed && !h.feedGrain) { h.feedGrain = h.feed; delete h.feed; }
+  });
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
+  catch (e) { alert('Storage is full — try removing a photo or two, or use smaller images.'); }
+  writeBackupFile();
+  showToast('Saved ✓');
+  renderAll();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+// ============ Auto-backup to a real file (survives cleared browser storage) ============
+let fileHandle = null;
+function fsaSupported() { return typeof window.showSaveFilePicker === 'function' && typeof indexedDB !== 'undefined'; }
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('equitrack-fs', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbSet(k, v) {
+  const d = await idbOpen();
+  return new Promise((res, rej) => {
+    const t = d.transaction('kv', 'readwrite');
+    t.objectStore('kv').put(v, k);
+    t.oncomplete = res; t.onerror = () => rej(t.error);
+  });
+}
+async function idbGet(k) {
+  const d = await idbOpen();
+  return new Promise((res, rej) => {
+    const t = d.transaction('kv', 'readonly');
+    const g = t.objectStore('kv').get(k);
+    g.onsuccess = () => res(g.result); g.onerror = () => rej(g.error);
+  });
+}
+async function writeBackupFile() {
+  if (!fileHandle) return;
+  try {
+    const w = await fileHandle.createWritable();
+    await w.write(JSON.stringify(db, null, 2));
+    await w.close();
+  } catch (e) { console.warn('backup write failed', e); }
+}
+async function setupBackupFile() {
+  if (!fsaSupported()) { alert('Your browser does not support auto-backup files — use the Export button now and then instead.'); return; }
+  try {
+    fileHandle = await window.showSaveFilePicker({
+      suggestedName: (db.settings.barnName || 'jumpsync').toLowerCase().replace(/\s+/g, '-') + '-data.json',
+      types: [{ description: 'JumpSync data', accept: { 'application/json': ['.json'] } }]
+    });
+    await idbSet('handle', fileHandle);
+    // if they picked an existing backup that has data while the app is empty, restore — never overwrite
+    if (!hasData()) {
+      try {
+        const f = await fileHandle.getFile();
+        const data = JSON.parse(await f.text());
+        if (data && data.horses && (data.horses.length || (data.riders || []).length || (data.events || []).length)) {
+          db = Object.assign({ horses:[], health:[], rides:[], events:[], riders:[], messages:[], contacts:[], dms:[], ledger:[], results:[], settings:{} }, data);
+          localStorage.setItem(STORE_KEY, JSON.stringify(db));
+          renderAll();
+          showToast('Data restored from backup 💾');
+          if (!currentUser()) openLogin(true);
+          updateFileBtn();
+          return;
+        }
+      } catch (e) { /* empty or new file — fall through and write */ }
+    }
+    await writeBackupFile();
+    updateFileBtn();
+    showToast('Auto-backup is on 💾');
+  } catch (e) { /* user cancelled */ }
+}
+async function reconnectBackupFile() {
+  try {
+    const h = await idbGet('handle');
+    if (!h) { setupBackupFile(); return; }
+    const perm = await h.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return;
+    fileHandle = h;
+    // if browser storage was wiped, restore from the backup file
+    if (!hasData()) {
+      try {
+        const f = await h.getFile();
+        const data = JSON.parse(await f.text());
+        if (data && data.horses) {
+          db = Object.assign({ horses:[], health:[], rides:[], events:[], riders:[], messages:[], contacts:[], dms:[], ledger:[], results:[], settings:{} }, data);
+          localStorage.setItem(STORE_KEY, JSON.stringify(db));
+          renderAll();
+          showToast('Data restored from backup 💾');
+        }
+      } catch (e) { console.warn('restore failed', e); }
+    }
+    updateFileBtn();
+    if (!currentUser()) openLogin(true);
+  } catch (e) { console.warn(e); }
+}
+function updateFileBtn() {
+  const b = document.getElementById('fileBtn');
+  if (!b) return;
+  if (!fsaSupported()) { b.style.display = 'none'; return; }
+  b.style.display = '';
+  if (fileHandle) {
+    b.textContent = '💾 Backup on';
+    b.style.borderColor = ''; b.style.color = '';
+    b.onclick = () => { writeBackupFile(); showToast('Backed up ✓'); };
+  } else {
+    b.textContent = '⚠ Not backed up — click to fix';
+    b.style.borderColor = 'var(--warn)'; b.style.color = 'var(--warn)';
+    b.onclick = () => reconnectBackupFile();
+  }
+}
+function hasData() {
+  return !!(db.horses.length || db.riders.length || db.rides.length || db.events.length || db.contacts.length || db.messages.length || db.dms.length || db.ledger.length || db.results.length);
+}
+function openRecoveryModal() {
+  openModal(`
+    <h3>Welcome back</h3>
+    <p style="margin-bottom:10px">Your browser cleared its local copy of the barn data — this happens with some privacy settings. <strong>Your backup file still has everything.</strong></p>
+    <p class="meta" style="font-style:italic">One click below and you're back where you left off.</p>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal(); if(!currentUser()) openLogin(true)">Start fresh instead</button>
+      <button class="btn" onclick="closeModal(); reconnectBackupFile()">Reconnect &amp; restore 💾</button>
+    </div>`);
+}
+async function initFileSync() {
+  // ask the browser to never evict our storage
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  if (!fsaSupported()) return;
+  let h = null;
+  try {
+    h = await idbGet('handle');
+    if (h && await h.queryPermission({ mode: 'readwrite' }) === 'granted') fileHandle = h;
+  } catch (e) {}
+  updateFileBtn();
+  // browser storage wiped but a backup file exists → offer restore front and center
+  if (h && !fileHandle && !hasData()) openRecoveryModal();
+}
+// warn before closing if there's data and no backup file connected
+window.addEventListener('beforeunload', e => {
+  if (!fileHandle && fsaSupported() && hasData()) { e.preventDefault(); e.returnValue = ''; }
+});
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(d) {
+  if (!d) return '';
+  return new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function horseName(id) { const h = db.horses.find(h => h.id === id); return h ? h.name : 'Unknown'; }
+function daysUntil(d) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((new Date(d + 'T00:00:00') - today) / 86400000);
+}
+function dueBadge(d) {
+  const n = daysUntil(d);
+  if (n < 0) return '<span class="badge overdue">Overdue</span>';
+  if (n <= 7) return '<span class="badge soon">' + (n === 0 ? 'Today' : 'In ' + n + 'd') + '</span>';
+  return '<span class="badge ok">' + fmtDate(d) + '</span>';
+}
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'jumpsync-backup-' + todayStr() + '.json';
+  a.click();
+}
+function importData(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try { db = Object.assign({ horses:[], health:[], rides:[], events:[], riders:[], messages:[], contacts:[], dms:[], ledger:[], results:[], settings:{} }, JSON.parse(r.result)); save(); alert('Data imported!'); }
+    catch { alert('Could not read that file.'); }
+  };
+  r.readAsText(f);
+  ev.target.value = '';
+}
+
+// ============ Users & roles ============
+function currentUser() { return db.settings.user || null; }
+function isManager() { const u = currentUser(); return u && u.role === 'Manager'; }
+function isStaff() { const u = currentUser(); return u && (u.role === 'Manager' || u.role === 'Employee'); }
+
+function openLogin(firstTime) {
+  const u = currentUser() || {};
+  openModal(`
+    <svg viewBox="0 0 120 120" style="width:76px;height:76px;display:block;margin:0 auto 6px"><use href="#pony"/></svg>
+    <h3 style="text-align:center">Welcome${u.name ? ' back' : ''}</h3>
+    <p class="meta" style="font-style:italic;text-align:center;margin-bottom:4px">Sign in to your barn portal.</p>
+    <label>Your name</label><input id="f_uname" value="${esc(u.name)}" placeholder="e.g. Alice Cooper">
+    <label>Access level</label>
+    <select id="f_urole">
+      ${['Manager','Employee','Rider'].map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}
+    </select>
+    <label>Password <span style="text-transform:none;letter-spacing:0">(riders only — your full name + 1, no spaces)</span></label>
+    <input id="f_upass" type="password" placeholder="e.g. AliceCooper1">
+    <div class="modal-btns">
+      ${firstTime ? '' : '<button class="btn secondary" onclick="closeModal()">Cancel</button>'}
+      <button class="btn" onclick="saveLogin()">Enter the barn</button>
+    </div>`);
+}
+function saveLogin() {
+  const name = document.getElementById('f_uname').value.trim();
+  if (!name) { alert('Please enter your name.'); return; }
+  const role = document.getElementById('f_urole').value;
+  if (role === 'Rider') {
+    const prof = db.riders.find(r => r.name.toLowerCase() === name.toLowerCase());
+    if (!prof) { alert('No rider account found under that name — ask the barn to add you as a client first.'); return; }
+    const expected = name.replace(/\s+/g, '') + '1';
+    const given = document.getElementById('f_upass').value.trim();
+    if (given !== expected) { alert('That password doesn\'t match. Hint: your full name with no spaces, then a 1.'); return; }
+    db.settings.user = { name: prof.name, role };
+    closeModal(); save();
+    if (!prof.questionnaireDone) openRiderQuestionnaire();
+    return;
+  }
+  db.settings.user = { name, role };
+  closeModal(); save();
+}
+
+function openRiderQuestionnaire() {
+  openModal(`
+    <h3>Welcome to the barn 🐴</h3>
+    <p class="meta" style="font-style:italic">A few questions so we can take the best care of you — only barn staff see this.</p>
+    <div class="form-row">
+      <div><label>Date of birth</label><input id="q_dob" type="date"></div>
+      <div><label>Phone</label><input id="q_phone"></div>
+    </div>
+    <label>Address</label><input id="q_address">
+    <label>Emergency contact</label><input id="q_emerg" placeholder="Name & phone">
+    <label>Any allergies?</label><textarea id="q_allergies" rows="2"></textarea>
+    <label>Any medical conditions?</label><textarea id="q_medical" rows="2"></textarea>
+    <label>Anything impacting your riding?</label><textarea id="q_impact" rows="2" placeholder="e.g. old knee injury — no-stirrup work is tough"></textarea>
+    <label>Your history as a rider (if any)</label><textarea id="q_history" rows="3" placeholder="e.g. 5 years hunter/jumper, showed 2'6&quot;, took a few years off"></textarea>
+    <label>What are you looking for out of our barn?</label><textarea id="q_goals" rows="2" placeholder="e.g. weekly lessons, working toward a half-lease"></textarea>
+    <label>Any questions for us?</label><textarea id="q_questions" rows="2" placeholder="Anything at all — this goes straight to the manager's messages"></textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Later</button>
+      <button class="btn" onclick="saveQuestionnaire()">Submit</button>
+    </div>`);
+}
+function saveQuestionnaire() {
+  const u = currentUser(); if (!u) return;
+  const g = id => document.getElementById(id).value.trim();
+  let r = db.riders.find(x => x.name.toLowerCase() === u.name.toLowerCase());
+  if (!r) {
+    r = { id: uid(), name: u.name, role: 'Rider', level: '', horses: '', email: '', notes: '' };
+    db.riders.push(r);
+  }
+  Object.assign(r, {
+    dob: document.getElementById('q_dob').value,
+    phone: g('q_phone') || r.phone || '',
+    address: g('q_address'),
+    emergency: g('q_emerg') || r.emergency || '',
+    allergies: g('q_allergies'),
+    medical: g('q_medical'),
+    impact: g('q_impact'),
+    historyRiding: g('q_history'),
+    goals: g('q_goals'),
+    questions: g('q_questions'),
+    questionnaireDone: true
+  });
+  if (r.questions) {
+    db.dms.push({ id: uid(), from: u.name, fromRole: 'Rider', to: 'Barn Management',
+      text: 'From my signup questionnaire: ' + r.questions, at: new Date().toISOString() });
+  }
+  closeModal(); save(); showToast('Thank you — welcome! 🐴');
+}
+
+function renameBarn() {
+  const name = prompt('Barn / app name:', db.settings.barnName || 'JumpSync');
+  if (name && name.trim()) { db.settings.barnName = name.trim(); save(); }
+}
+
+// ============ Navigation ============
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + name);
+  (el || document.getElementById('view-home')).classList.add('active');
+  const hd = document.getElementById('horseDetail');
+  if (hd) { hd.innerHTML = ''; document.getElementById('horseList').style.display = ''; }
+  renderAll();
+  window.scrollTo(0, 0);
+}
+
+// ============ Modal helpers ============
+function openModal(html) {
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+function horseOptions(sel) {
+  return db.horses.map(h => `<option value="${h.id}" ${h.id===sel?'selected':''}>${esc(h.name)}</option>`).join('');
+}
+
+// ============ Photo handling ============
+let pendingPhoto = '';
+function photoPicked(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 700;
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      pendingPhoto = c.toDataURL('image/jpeg', 0.82);
+      const p = document.getElementById('photoPreview');
+      if (p) { p.src = pendingPhoto; p.style.display = ''; }
+    };
+    img.src = rd.result;
+  };
+  rd.readAsDataURL(f);
+}
+function clearPhoto() {
+  pendingPhoto = '';
+  const p = document.getElementById('photoPreview');
+  if (p) { p.src = ''; p.style.display = 'none'; }
+}
+function ponyPlaceholder() {
+  return '<div class="hphoto-ph"><svg viewBox="0 0 120 120"><use href="#pony"/></svg></div>';
+}
+</script>
+
+<script>
+// ============ Home portal ============
+const TILES = [
+  { view: 'calendar', name: 'Calendar',        desc: 'The month at a glance', roles: ['Manager','Employee','Rider'] },
+  { view: 'horses',   name: 'Horses',          desc: 'Profiles & health records', roles: ['Manager','Employee','Rider'] },
+  { view: 'riders',   name: 'Rider Profiles',  desc: 'Riders, boarders & staff', roles: ['Manager','Employee'] },
+  { view: 'events',   name: 'Upcoming Events', desc: 'Shows, lessons & reminders', roles: ['Manager','Employee','Rider'] },
+  { view: 'messages', name: 'Message Portal',  desc: 'Barn notes & announcements', roles: ['Manager','Employee','Rider'] },
+  { view: 'contacts', name: 'Contacts',        desc: 'Vets, farriers & bodywork', roles: ['Manager'] },
+  { view: 'stats',    name: 'Ride Stats',      desc: 'Workload per horse', roles: ['Manager','Employee'] },
+  { view: 'billing',  name: 'Billing',         desc: 'Board, lessons & balances', roles: ['Manager','Rider'] },
+  { view: 'bulletin', name: 'Show Bulletin',   desc: 'Local & national shows', roles: ['Manager','Employee','Rider'] },
+  { view: 'results',  name: 'Results & Points', desc: 'Ribbons & season standings', roles: ['Manager','Employee','Rider'] }
+];
+
+function tileIcon() {
+  return '<svg class="t-icon" viewBox="0 0 120 120"><use href="#pony"/></svg>';
+}
+
+function renderHome() {
+  const name = db.settings.barnName || 'JumpSync';
+  document.getElementById('homeName').textContent = name;
+  document.getElementById('brandName').textContent = name;
+  document.title = name + ' — Stable Portal';
+  const u = currentUser();
+  document.getElementById('userChip').innerHTML = u ? `<b>${esc(u.name)}</b> · ${esc(u.role)}` : '';
+  const role = u ? u.role : 'Rider';
+  document.getElementById('portalGrid').innerHTML = TILES.map(t => {
+    const allowed = t.roles.includes(role);
+    return `<div class="tile" style="${allowed?'':'opacity:.45'}" onclick="${allowed ? `showView('${t.view}')` : `alert('This area is for ${t.roles.join(' & ')} access.')`}">
+      ${tileIcon()}
+      <div class="t-name">${t.name}</div>
+      <div class="t-desc">${t.desc}</div>
+      ${allowed ? '' : `<div class="t-lock">🔒 ${t.roles.join(' / ')} only</div>`}
+    </div>`;
+  }).join('');
+}
+
+// ============ Weather & blanket alerts (Open-Meteo, free, no key) ============
+let _weather = null;
+async function fetchWeather() {
+  try {
+    const cached = JSON.parse(localStorage.getItem('equitrack-weather') || 'null');
+    if (cached && Date.now() - cached.ts < 3600000) { _weather = cached; renderWeather(); return; }
+    const lat = db.settings.lat || 39.53, lon = db.settings.lon || -119.81; // Reno, NV
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=3`);
+    const j = await res.json();
+    _weather = {
+      ts: Date.now(),
+      days: j.daily.time.map((d, i) => ({
+        date: d,
+        min: Math.round(j.daily.temperature_2m_min[i]),
+        max: Math.round(j.daily.temperature_2m_max[i]),
+        precip: j.daily.precipitation_probability_max[i] || 0
+      }))
+    };
+    localStorage.setItem('equitrack-weather', JSON.stringify(_weather));
+    renderWeather();
+  } catch (e) { /* offline — quietly skip */ }
+}
+function blanketAlerts(lowF) {
+  return db.horses.filter(h => {
+    if (!h.blanket) return false;
+    const temps = [...h.blanket.matchAll(/(\d{2,3})/g)].map(m => parseInt(m[1], 10)).filter(n => n >= 15 && n <= 70);
+    return temps.length && lowF <= Math.max(...temps);
+  });
+}
+function renderWeather() {
+  const el = document.getElementById('weatherCard');
+  if (!el) return;
+  if (!_weather || !_weather.days || _weather.days.length < 2) { el.innerHTML = ''; return; }
+  const [today, tomorrow] = _weather.days;
+  const alerts = isStaff() ? blanketAlerts(today.min) : [];
+  el.innerHTML = `<div class="card" style="text-align:center">
+    <div class="meta" style="letter-spacing:.24em;text-transform:uppercase;font-size:.68rem">Tonight at the barn · Reno NV</div>
+    <div style="font-size:1.05rem;margin-top:4px">🌙 Low ${today.min}° &nbsp;·&nbsp; ☀️ Tomorrow ${tomorrow.max}°/${tomorrow.min}°${today.precip >= 30 ? ` &nbsp;·&nbsp; ☔ ${today.precip}% chance of rain` : ''}</div>
+    ${alerts.length ? `<div class="care-alert" style="text-align:left;margin-top:12px">🧥 <strong>Blanket check tonight (low ${today.min}°):</strong> ${alerts.map(h => esc(h.name)).join(', ')}
+      ${alerts.map(h => `<div class="meta">${esc(h.name)}: ${esc(h.blanket)}</div>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+// ============ Calendar ============
+let calYear, calMonth; // set on boot
+function calShift(n) {
+  calMonth += n;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+function dateKey(y, m, d) {
+  return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+function itemsOn(dstr) {
+  return agendaForUser().filter(a => a.date === dstr);
+}
+function renderCalendar() {
+  if (calYear === undefined) { const n = new Date(); calYear = n.getFullYear(); calMonth = n.getMonth(); }
+  const first = new Date(calYear, calMonth, 1);
+  const title = first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  document.getElementById('calTitle').textContent = title;
+  const startDow = first.getDay();
+  const daysIn = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  const today = todayStr();
+  let cells = [];
+  for (let i = startDow - 1; i >= 0; i--) cells.push({ d: prevDays - i, other: true });
+  for (let d = 1; d <= daysIn; d++) cells.push({ d, other: false });
+  let nd = 1;
+  while (cells.length % 7 !== 0) cells.push({ d: nd++, other: true, next: true });
+  let html = '', week = '';
+  cells.forEach((c, i) => {
+    let content;
+    if (c.other) content = `<td class="other"><span class="dnum">${c.d}</span></td>`;
+    else {
+      const key = dateKey(calYear, calMonth, c.d);
+      const items = itemsOn(key);
+      const dots = items.slice(0, 4).map(it => `<span class="dot ${it.kind}"></span>`).join('');
+      content = `<td class="${key === today ? 'today' : ''}" onclick="showDay('${key}')"><span class="dnum">${c.d}</span><div>${dots}</div></td>`;
+    }
+    week += content;
+    if ((i + 1) % 7 === 0) { html += '<tr>' + week + '</tr>'; week = ''; }
+  });
+  document.getElementById('calBody').innerHTML = html;
+}
+function showDay(dstr) {
+  const items = itemsOn(dstr);
+  document.getElementById('dayDetail').innerHTML = `
+    <div class="card">
+      <div class="row">
+        <h3 class="entity">${fmtDate(dstr)}</h3>
+        ${isStaff() ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn small" onclick="openRideForm('', '${dstr}', '', 'calendar')">+ Book ride</button>
+          <button class="btn small secondary" onclick="openEventForm('${dstr}')">+ Add event</button>
+        </div>` : ''}
+      </div>
+      ${items.length ? items.map(it => agendaItem(it, 'calendar')).join('') : '<div class="empty">Nothing scheduled this day.</div>'}
+    </div>`;
+}
+</script>
+
+<script>
+// ============ Horses & health ============
+const HEALTH_TYPES = ['Vet visit', 'Farrier', 'Vaccination', 'Deworming', 'Dental', 'Other'];
+
+function openHorseForm(id) {
+  if (!isStaff()) { alert('Only managers and employees can edit horse profiles.'); return; }
+  const h = db.horses.find(x => x.id === id) || {};
+  pendingPhoto = h.photo || '';
+  openModal(`
+    <h3>${id ? 'Edit ' + esc(h.name) : 'Add a horse'}</h3>
+    <p class="meta" style="font-style:italic">Everything is optional except the barn name — fill in what your barn uses.</p>
+    <div class="photo-row">
+      <img id="photoPreview" class="photo-thumb" src="${h.photo || ''}" style="${h.photo ? '' : 'display:none'}" alt="">
+      <div style="flex:1">
+        <label>Photo</label>
+        <input type="file" id="f_photo" accept="image/*" onchange="photoPicked(event)">
+        ${h.photo ? '<button class="btn small danger" style="margin-top:6px" onclick="clearPhoto()">Remove photo</button>' : ''}
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label>Barn name *</label><input id="f_name" value="${esc(h.name)}" placeholder="e.g. Willow"></div>
+      <div><label>Show name</label><input id="f_show" value="${esc(h.showName)}" placeholder="e.g. Whispering Willow"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Breed</label><input id="f_breed" value="${esc(h.breed)}"></div>
+      <div><label>Color</label><input id="f_color" value="${esc(h.color)}" placeholder="e.g. Dapple grey"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Year of birth</label><input id="f_yob" type="number" value="${h.yob || ''}"></div>
+      <div><label>Sex</label><select id="f_sex">
+        ${['','Mare','Gelding','Stallion','Filly','Colt'].map(s=>`<option ${h.sex===s?'selected':''}>${s}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div><label>Owner / boarder</label><input id="f_owner" value="${esc(h.owner)}"></div>
+      <div><label>Assigned rider(s)</label><input id="f_riders" value="${esc(h.riders)}" placeholder="e.g. Anna, Mae"></div>
+    </div>
+    <label>History &amp; temperament</label><textarea id="f_history" rows="3" placeholder="e.g. Former Grand Prix jumper, retired sound. Very sweet, loves peppermints, a little mouthy on crossties.">${esc(h.history)}</textarea>
+    <label>Allergies &amp; sensitivities</label><textarea id="f_allergies" rows="2" placeholder="e.g. Allergic to alfalfa. Sensitive skin — no fly spray on face.">${esc(h.allergies)}</textarea>
+    <label>Grain — what &amp; when</label><textarea id="f_grain" rows="2" placeholder="e.g. 6 AM &amp; 5 PM — 1 scoop senior feed + joint supplement">${esc(h.feedGrain)}</textarea>
+    <label>Hay — what &amp; when</label><textarea id="f_hay" rows="2" placeholder="e.g. 3 flakes timothy at AM feed, 2 at noon, 3 at night check">${esc(h.feedHay)}</textarea>
+    <div class="form-row">
+      <div><label>Turnout time</label><input id="f_ttime" value="${esc(h.turnoutTime)}" placeholder="e.g. 8 AM – 2 PM"></div>
+      <div><label>Which turnout</label><input id="f_tloc" value="${esc(h.turnoutLoc)}" placeholder="e.g. 4, or Lower arena turnout"></div>
+    </div>
+    <label>Turnout buddies</label><input id="f_tbud" value="${esc(h.turnoutBuddies)}" placeholder="e.g. Fine with Duke &amp; Pepper — never with Ace">
+    <label>Blanketing — when it's cold</label><textarea id="f_blanket" rows="2" placeholder="e.g. Sheet below 50°F, medium below 40°F, heavy + neck below 25°F">${esc(h.blanket)}</textarea>
+    <label>Other notes</label><textarea id="f_notes" rows="2">${esc(h.notes)}</textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveHorse('${id || ''}')">Save</button>
+    </div>`);
+}
+function saveHorse(id) {
+  const name = document.getElementById('f_name').value.trim();
+  if (!name) { alert('Please give the horse a barn name.'); return; }
+  const g = f => document.getElementById(f).value.trim();
+  const data = {
+    name,
+    photo: pendingPhoto,
+    showName: g('f_show'),
+    breed: g('f_breed'),
+    color: g('f_color'),
+    yob: document.getElementById('f_yob').value,
+    sex: document.getElementById('f_sex').value,
+    owner: g('f_owner'),
+    riders: g('f_riders'),
+    history: g('f_history'),
+    allergies: g('f_allergies'),
+    feedGrain: g('f_grain'),
+    feedHay: g('f_hay'),
+    turnoutTime: g('f_ttime'),
+    turnoutLoc: g('f_tloc'),
+    turnoutBuddies: g('f_tbud'),
+    blanket: g('f_blanket'),
+    notes: g('f_notes')
+  };
+  if (id) Object.assign(db.horses.find(h => h.id === id), data);
+  else db.horses.push(Object.assign({ id: uid() }, data));
+  closeModal(); save();
+}
+function deleteHorse(id) {
+  if (!confirm('Delete this horse and all its records?')) return;
+  db.horses = db.horses.filter(h => h.id !== id);
+  db.health = db.health.filter(r => r.horseId !== id);
+  db.rides = db.rides.filter(r => r.horseId !== id);
+  db.events = db.events.filter(e => e.horseId !== id);
+  save();
+}
+function horseAge(h) { return h.yob ? (new Date().getFullYear() - h.yob) + ' yrs' : ''; }
+
+function assignedToMe(h) {
+  const u = currentUser();
+  if (!u || !h.riders) return false;
+  return h.riders.toLowerCase().split(/[,;]/).map(s => s.trim()).includes(u.name.toLowerCase());
+}
+
+function renderHorses() {
+  const addBtn = document.getElementById('addHorseBtn');
+  if (addBtn) addBtn.style.display = isStaff() ? '' : 'none';
+  const el = document.getElementById('horseList');
+  if (!db.horses.length) {
+    el.innerHTML = '<div class="empty card" style="grid-column:1/-1">No horses yet' + (isStaff() ? ' — add your first one.' : '.') + '</div>';
+    return;
+  }
+  const horses = db.horses.slice().sort((a, b) => (assignedToMe(b) - assignedToMe(a)) || a.name.localeCompare(b.name));
+  el.innerHTML = horses.map(h => {
+    const bits = [h.breed, h.color, h.sex, horseAge(h)].filter(Boolean).join(' · ');
+    const s = weekStats(h.id);
+    const care = upcomingCare(h.id)[0];
+    return `<div class="card">
+      ${h.photo ? `<img class="hphoto" src="${h.photo}" alt="${esc(h.name)}">` : ponyPlaceholder()}
+      <h3 class="entity">${esc(h.name)} ${assignedToMe(h) ? '<span class="badge assigned-badge">Your horse</span>' : ''}</h3>
+      ${h.showName ? `<div class="showname">"${esc(h.showName)}"</div>` : ''}
+      <div class="meta">${esc(bits) || 'No details yet'}</div>
+      ${h.riders ? `<div class="meta">Rider${h.riders.includes(',') ? 's' : ''}: ${esc(h.riders)}</div>` : ''}
+      <div class="meta">This week: ${s.total} ride${s.total === 1 ? '' : 's'}${s.total ? ` — ${s.jump} jumping · ${s.flat} flat` : ''}</div>
+      ${care ? `<div style="margin-top:6px"><span class="badge soon">${careChipText(care)}</span></div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn small" onclick="showHorseDetail('${h.id}')">View profile</button>
+        ${isStaff() ? `<button class="btn small secondary" onclick="openHorseForm('${h.id}')">Edit</button>` : ''}
+        ${isManager() ? `<button class="btn small danger" onclick="deleteHorse('${h.id}')">Delete</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function upcomingCare(horseId) {
+  return getAgenda().filter(a =>
+    a.horseId === horseId &&
+    (a.kind === 'health' || ['Vet appointment', 'Farrier', 'Care task', 'Clinic'].includes(a.type)) &&
+    daysUntil(a.date) >= 0 && daysUntil(a.date) <= 10);
+}
+function careChipText(a) {
+  const n = daysUntil(a.date);
+  const what = a.kind === 'health' ? a.title.replace(' due', '') : a.type.replace(' appointment', '');
+  return `${what} ${n === 0 ? 'today' : 'in ' + n + 'd'}`;
+}
+function careBanners(horseId) {
+  return upcomingCare(horseId).slice(0, 2).map(a => {
+    const n = daysUntil(a.date);
+    return `<div class="care-alert">🩺 <strong>${esc(a.title)}</strong> — ${fmtDate(a.date)}
+      (${n === 0 ? 'today' : 'in ' + n + ' day' + (n === 1 ? '' : 's')})${a.provider ? ' · ' + esc(a.provider) : ''}</div>`;
+  }).join('');
+}
+
+function kvRow(label, val) {
+  return val ? `<dt>${label}</dt><dd>${esc(val)}</dd>` : '';
+}
+function careSection(title, rowsHtml) {
+  return rowsHtml ? `<div class="card"><h3 class="entity">${title}</h3><dl class="kv">${rowsHtml}</dl></div>` : '';
+}
+
+function showHorseDetail(id) {
+  const h = db.horses.find(x => x.id === id); if (!h) return;
+  document.getElementById('horseList').style.display = 'none';
+  const staff = isStaff();
+  const recs = db.health.filter(r => r.horseId === id).sort((a,b) => b.date.localeCompare(a.date));
+  const rides = db.rides.filter(r => r.horseId === id).sort((a,b) => b.date.localeCompare(a.date)).slice(0, 8);
+  const bits = [h.breed, h.color, h.sex, horseAge(h)].filter(Boolean).join(' · ');
+
+  const hero = `
+    <div class="card" style="margin-top:12px">
+      <div class="hero">
+        ${h.photo ? `<img src="${h.photo}" alt="${esc(h.name)}">` : ''}
+        <div class="hero-info">
+          <div class="row">
+            <h3 class="entity" style="font-size:1.7rem">${esc(h.name)} ${assignedToMe(h) ? '<span class="badge assigned-badge">Your horse</span>' : ''}</h3>
+            ${staff ? `<button class="btn small secondary" onclick="openHorseForm('${id}')">Edit profile</button>` : ''}
+          </div>
+          ${h.showName ? `<div class="showname">"${esc(h.showName)}"</div>` : ''}
+          ${bits ? `<div class="meta" style="margin-top:4px">${esc(bits)}</div>` : ''}
+          <dl class="kv">
+            ${kvRow('Owner / boarder', h.owner)}
+            ${kvRow('Assigned rider(s)', h.riders)}
+            ${kvRow('Notes', h.notes)}
+          </dl>
+        </div>
+      </div>
+    </div>`;
+
+  const history = h.history ? `
+    <div class="card"><h3 class="entity">History &amp; temperament</h3>
+      <div style="white-space:pre-wrap;margin-top:6px">${esc(h.history)}</div>
+    </div>` : '';
+
+  const care = careSection('Care',
+    kvRow('⚠ Allergies', h.allergies) +
+    kvRow('Blanketing', h.blanket));
+
+  const feeding = staff ? careSection('Feeding schedule',
+    kvRow('Grain', h.feedGrain) +
+    kvRow('Hay', h.feedHay)) : '';
+
+  const turnout = careSection('Turnout',
+    kvRow('Time', h.turnoutTime) +
+    kvRow('Which turnout', h.turnoutLoc) +
+    kvRow('Turnout buddies', h.turnoutBuddies));
+
+  document.getElementById('horseDetail').innerHTML = `
+    <button class="back" onclick="showView('horses')">← All horses</button>
+    ${careBanners(id)}
+    ${hero}
+    ${history}
+    ${care}
+    ${feeding}
+    ${turnout}
+    <div class="card">
+      <div class="row">
+        <h3 class="entity">Health records</h3>
+        ${staff ? `<button class="btn small" onclick="openHealthForm('${id}')">+ Add record</button>` : ''}
+      </div>
+      ${recs.length ? recs.map(r => `
+        <div class="list-item row">
+          <div>
+            <span class="badge type">${esc(r.type)}</span>
+            <strong style="margin-left:6px">${fmtDate(r.date)}</strong>
+            ${r.notes ? `<div class="meta">${esc(r.notes)}</div>` : ''}
+            ${r.nextDue ? `<div class="meta">Next due: ${fmtDate(r.nextDue)} ${dueBadge(r.nextDue)}</div>` : ''}
+          </div>
+          ${staff ? `<button class="btn small danger" onclick="deleteHealth('${r.id}','${id}')">Delete</button>` : ''}
+        </div>`).join('') : '<div class="empty">No health records yet.</div>'}
+    </div>
+    <div class="card">
+      <div class="row">
+        <h3 class="entity">Training log</h3>
+        ${staff ? `<button class="btn small" onclick="openRideForm('${id}')">+ Book / log ride</button>` : ''}
+      </div>
+      ${rides.length ? rides.map(r => `
+        <div class="list-item row">
+          <div>
+            <span class="badge type">${esc(r.type)}</span>
+            <strong style="margin-left:6px">${fmtDate(r.date)}</strong>
+            <span class="meta">${r.duration ? r.duration + ' min · ' : ''}${esc(r.intensity)}${r.rider ? ' · ' + esc(r.rider) : ''}</span>
+            ${r.notes ? `<div class="meta">${esc(r.notes)}</div>` : ''}
+          </div>
+          ${staff ? `<div style="display:flex;gap:6px">
+            <button class="btn small secondary" onclick="openRideForm('','','','detail','${r.id}')">Edit</button>
+            <button class="btn small danger" onclick="deleteRide('${r.id}','${id}')">Delete</button>
+          </div>` : ''}
+        </div>`).join('') : '<div class="empty">No rides logged yet.</div>'}
+    </div>`;
+}
+
+function openHealthForm(horseId) {
+  openModal(`
+    <h3>Health record</h3>
+    <p class="meta" style="font-style:italic">${esc(horseName(horseId))}</p>
+    <label>Type</label><select id="f_htype">${HEALTH_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+    <div class="form-row">
+      <div><label>Date</label><input id="f_hdate" type="date" value="${todayStr()}"></div>
+      <div><label>Next due (optional)</label><input id="f_hnext" type="date"></div>
+    </div>
+    <label>Notes</label><textarea id="f_hnotes" rows="3"></textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveHealth('${horseId}')">Save</button>
+    </div>`);
+}
+function saveHealth(horseId) {
+  const date = document.getElementById('f_hdate').value;
+  if (!date) { alert('Please pick a date.'); return; }
+  db.health.push({
+    id: uid(), horseId,
+    type: document.getElementById('f_htype').value,
+    date,
+    nextDue: document.getElementById('f_hnext').value,
+    notes: document.getElementById('f_hnotes').value.trim()
+  });
+  closeModal(); save(); showHorseDetail(horseId);
+}
+function deleteHealth(id, horseId) {
+  db.health = db.health.filter(r => r.id !== id);
+  save(); showHorseDetail(horseId);
+}
+
+// ============ Rides & bookings ============
+const RIDE_TYPES = ['Flatwork', 'Jumping', 'Trail ride', 'Lunging', 'Groundwork', 'Lesson', 'Hack', 'Other'];
+let _rideReturn = 'detail'; // where to go after saving: 'detail' | 'calendar' | 'riders'
+
+function riderDatalist() {
+  return `<datalist id="riderNames">${db.riders.map(r => `<option value="${esc(r.name)}">`).join('')}</datalist>`;
+}
+
+let _rideEditId = '';
+function openRideForm(horseId, dateStr, riderName, returnTo, rideId) {
+  if (!isStaff()) { alert('Only managers and employees can book or log rides.'); return; }
+  if (!db.horses.length) { alert('Add a horse first!'); return; }
+  _rideReturn = returnTo || 'detail';
+  _rideEditId = rideId || '';
+  const r = rideId ? (db.rides.find(x => x.id === rideId) || {}) : {};
+  openModal(`
+    <h3>${rideId ? 'Edit ride / lesson' : 'Book / log a ride'}</h3>
+    <p class="meta" style="font-style:italic">A future date books it onto the calendar; today or past logs it in the training log.</p>
+    <label>Horse</label><select id="f_rhorse">${horseOptions(r.horseId || horseId)}</select>
+    <label>Rider</label><input id="f_rrider" list="riderNames" value="${esc(r.rider || riderName || '')}" placeholder="Start typing a rider's name">
+    ${riderDatalist()}
+    <div class="form-row">
+      <div><label>Date</label><input id="f_rdate" type="date" value="${r.date || dateStr || todayStr()}"></div>
+      <div><label>Time (optional)</label><input id="f_rtime" type="time" value="${r.time || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Type</label><select id="f_rtype">${RIDE_TYPES.map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div><label>Duration (min)</label><input id="f_rdur" type="number" placeholder="45" value="${r.duration || ''}"></div>
+    </div>
+    <label>Intensity</label><select id="f_rint">
+      <option ${r.intensity==='Light'?'selected':''}>Light</option>
+      <option ${(!r.intensity || r.intensity==='Moderate')?'selected':''}>Moderate</option>
+      <option ${r.intensity==='Hard'?'selected':''}>Hard</option>
+    </select>
+    <label>Notes / how did it go?</label><textarea id="f_rnotes" rows="3">${esc(r.notes)}</textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveRide()">Save</button>
+    </div>`);
+}
+function saveRide() {
+  const date = document.getElementById('f_rdate').value;
+  if (!date) { alert('Please pick a date.'); return; }
+  const horseId = document.getElementById('f_rhorse').value;
+  const data = {
+    horseId, date,
+    time: document.getElementById('f_rtime').value,
+    duration: document.getElementById('f_rdur').value,
+    type: document.getElementById('f_rtype').value,
+    intensity: document.getElementById('f_rint').value,
+    rider: document.getElementById('f_rrider').value.trim(),
+    notes: document.getElementById('f_rnotes').value.trim()
+  };
+  if (_rideEditId) Object.assign(db.rides.find(r => r.id === _rideEditId), data);
+  else db.rides.push(Object.assign({ id: uid() }, data));
+  _rideEditId = '';
+  closeModal(); save();
+  if (_rideReturn === 'calendar') { showView('calendar'); showDay(date); }
+  else if (_rideReturn === 'riders') showView('riders');
+  else if (_rideReturn === 'events') showView('events');
+  else showHorseDetail(horseId);
+}
+function deleteRide(id, horseId) {
+  if (!isStaff()) return;
+  db.rides = db.rides.filter(r => r.id !== id);
+  save();
+  if (horseId) showHorseDetail(horseId);
+}
+function deleteRideAg(id, date, ctx) {
+  if (!isStaff()) return;
+  db.rides = db.rides.filter(r => r.id !== id);
+  save();
+  if (ctx === 'calendar') showDay(date);
+}
+
+function weekStats(horseId) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = new Date(today); start.setDate(start.getDate() - 6);
+  const rides = db.rides.filter(r => {
+    if (r.horseId !== horseId) return false;
+    const d = new Date(r.date + 'T00:00:00');
+    return d >= start && d <= today;
+  });
+  return {
+    total: rides.length,
+    jump: rides.filter(r => r.type === 'Jumping').length,
+    flat: rides.filter(r => r.type === 'Flatwork').length
+  };
+}
+
+// ============ Rider profiles ============
+function openRiderForm(id) {
+  const r = db.riders.find(x => x.id === id) || {};
+  openModal(`
+    <h3>${id ? 'Edit rider' : 'Add a rider'}</h3>
+    <label>Name *</label><input id="f_pname" value="${esc(r.name)}">
+    <div class="form-row">
+      <div><label>Role</label><select id="f_prole">
+        ${['Rider','Boarder','Trainer','Staff','Manager'].map(x=>`<option ${r.role===x?'selected':''}>${x}</option>`).join('')}
+      </select></div>
+      <div><label>Level</label><select id="f_plevel">
+        ${['','Beginner','Intermediate','Advanced','Professional'].map(x=>`<option ${r.level===x?'selected':''}>${x}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div><label>Phone</label><input id="f_pphone" value="${esc(r.phone)}"></div>
+      <div><label>Email</label><input id="f_pemail" value="${esc(r.email)}"></div>
+    </div>
+    <label>Emergency contact</label><input id="f_pemerg" value="${esc(r.emergency)}">
+    <label>Horses ridden / owned</label><input id="f_phorses" value="${esc(r.horses)}" placeholder="e.g. Willow, Duke">
+    <div class="form-row">
+      <div><label>Date of birth</label><input id="f_pdob" type="date" value="${r.dob || ''}"></div>
+      <div><label>Address</label><input id="f_paddress" value="${esc(r.address)}"></div>
+    </div>
+    <label>Allergies</label><textarea id="f_pallergies" rows="2">${esc(r.allergies)}</textarea>
+    <label>Medical conditions</label><textarea id="f_pmedical" rows="2">${esc(r.medical)}</textarea>
+    <label>Anything impacting their riding</label><textarea id="f_pimpact" rows="2" placeholder="e.g. old knee injury — keep no-stirrup work light">${esc(r.impact)}</textarea>
+    <label>Riding history</label><textarea id="f_phistory" rows="2">${esc(r.historyRiding)}</textarea>
+    <label>What they want from the barn</label><textarea id="f_pgoals" rows="2">${esc(r.goals)}</textarea>
+    <label>Notes</label><textarea id="f_pnotes" rows="2">${esc(r.notes)}</textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveRider('${id || ''}')">Save</button>
+    </div>`);
+}
+function saveRider(id) {
+  const name = document.getElementById('f_pname').value.trim();
+  if (!name) { alert('Please enter a name.'); return; }
+  const data = {
+    name,
+    role: document.getElementById('f_prole').value,
+    level: document.getElementById('f_plevel').value,
+    phone: document.getElementById('f_pphone').value.trim(),
+    email: document.getElementById('f_pemail').value.trim(),
+    emergency: document.getElementById('f_pemerg').value.trim(),
+    horses: document.getElementById('f_phorses').value.trim(),
+    dob: document.getElementById('f_pdob').value,
+    address: document.getElementById('f_paddress').value.trim(),
+    allergies: document.getElementById('f_pallergies').value.trim(),
+    medical: document.getElementById('f_pmedical').value.trim(),
+    impact: document.getElementById('f_pimpact').value.trim(),
+    historyRiding: document.getElementById('f_phistory').value.trim(),
+    goals: document.getElementById('f_pgoals').value.trim(),
+    notes: document.getElementById('f_pnotes').value.trim()
+  };
+  if (id) Object.assign(db.riders.find(r => r.id === id), data);
+  else db.riders.push(Object.assign({ id: uid() }, data));
+  closeModal(); save();
+}
+function deleteRider(id) {
+  if (!confirm('Remove this rider profile?')) return;
+  db.riders = db.riders.filter(r => r.id !== id); save();
+}
+function riderUpcoming(name) {
+  return db.rides
+    .filter(x => x.rider && x.rider.toLowerCase() === name.toLowerCase() && daysUntil(x.date) >= 0)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''))
+    .slice(0, 3);
+}
+function riderAge(r) {
+  if (!r.dob) return '';
+  const d = new Date(r.dob + 'T00:00:00'), now = new Date();
+  let a = now.getFullYear() - d.getFullYear();
+  if (now < new Date(now.getFullYear(), d.getMonth(), d.getDate())) a--;
+  return a + '';
+}
+function renderRiders() {
+  const el = document.getElementById('riderList');
+  el.innerHTML = db.riders.length ? db.riders.map(r => {
+    const up = riderUpcoming(r.name);
+    return `
+    <div class="card">
+      <h3 class="entity">${esc(r.name)}</h3>
+      <div class="meta"><span class="badge type">${esc(r.role)}</span>${r.level ? ' <span class="badge ok">' + esc(r.level) + '</span>' : ''}${seasonPoints(r.name) > 0 ? ' <span class="badge soon">🏆 ' + seasonPoints(r.name) + ' pts</span>' : ''}${r.dob ? ' <span class="meta">· ' + riderAge(r) + ' yrs</span>' : ''}</div>
+      ${r.horses ? `<div class="meta" style="margin-top:6px">Horses: ${esc(r.horses)}</div>` : ''}
+      ${r.phone ? `<div class="meta">☎ ${esc(r.phone)}</div>` : ''}
+      ${r.email ? `<div class="meta">✉ ${esc(r.email)}</div>` : ''}
+      ${r.address ? `<div class="meta">🏠 ${esc(r.address)}</div>` : ''}
+      ${r.emergency ? `<div class="meta">Emergency: ${esc(r.emergency)}</div>` : ''}
+      ${r.allergies ? `<div class="meta">⚠ Allergies: ${esc(r.allergies)}</div>` : ''}
+      ${r.medical ? `<div class="meta">⚠ Medical: ${esc(r.medical)}</div>` : ''}
+      ${r.impact ? `<div class="meta">Riding notes: ${esc(r.impact)}</div>` : ''}
+      ${r.historyRiding ? `<div class="meta">History: ${esc(r.historyRiding)}</div>` : ''}
+      ${r.goals ? `<div class="meta">Goals: ${esc(r.goals)}</div>` : ''}
+      ${r.questions ? `<div class="meta" style="font-style:italic">Asked at signup: "${esc(r.questions)}"</div>` : ''}
+      ${r.notes ? `<div class="meta" style="font-style:italic">${esc(r.notes)}</div>` : ''}
+      ${up.length ? `<div class="meta" style="margin-top:8px"><strong>Upcoming:</strong></div>` +
+        up.map(x => `<div class="meta">→ ${fmtDate(x.date)}${x.time ? ' · ' + x.time : ''} · ${esc(horseName(x.horseId))} — ${esc(x.type)}
+          ${isStaff() ? `<button class="btn small secondary" style="padding:1px 8px;font-size:.68rem" onclick="openRideForm('','','','riders','${x.id}')">edit</button>` : ''}</div>`).join('') : ''}
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        ${isStaff() ? `<button class="btn small" onclick="openRideForm('', '', '${esc(r.name)}', 'riders')">Book ride</button>` : ''}
+        <button class="btn small secondary" onclick="openRiderForm('${r.id}')">Edit</button>
+        ${isManager() ? `<button class="btn small danger" onclick="deleteRider('${r.id}')">Delete</button>` : ''}
+      </div>
+    </div>`;
+  }).join('')
+    : '<div class="empty card" style="grid-column:1/-1">No rider profiles yet.</div>';
+}
+
+// ============ Events & agenda ============
+const EVENT_TYPES = ['Lesson', 'Vet appointment', 'Farrier', 'Show / competition', 'Care task', 'Clinic', 'Other'];
+const REPEAT_OPTS = ['Does not repeat', 'Weekly', 'Every 2 weeks', 'Every 4 weeks', 'Every 6 weeks', 'Every 8 weeks', 'Monthly', 'Custom…'];
+const CONTACT_TYPES = ['Veterinarian', 'Farrier', 'Acupuncturist', 'Equine dentist', 'Chiropractor', 'Massage therapist', 'Trainer', 'Other'];
+
+function repeatChanged() {
+  const v = document.getElementById('f_erepeat').value;
+  document.getElementById('customDaysWrap').style.display = v === 'Custom…' ? '' : 'none';
+}
+function providerChanged() {
+  const v = document.getElementById('f_eprovider').value;
+  document.getElementById('npWrap').style.display = v === '__add__' ? '' : 'none';
+}
+function providerOptions() {
+  return db.contacts.map(c =>
+    `<option value="${esc(c.name)}">${esc(c.name)}${c.type ? ' · ' + esc(c.type) : ''}</option>`).join('');
+}
+
+let _evEditId = '';
+function openEventForm(dateStr, editId, occDate) {
+  if (!isStaff()) { alert('Only managers and employees can add events.'); return; }
+  _evEditId = editId || '';
+  const e = editId ? (db.events.find(x => x.id === editId) || {}) : {};
+  const isCustom = e.repeat === 'Custom…';
+  openModal(`
+    <h3>${editId ? 'Edit event' : 'Add event'}</h3>
+    <label>Title *</label><input id="f_etitle" value="${esc(e.title)}" placeholder="e.g. Farrier — trim all">
+    <div class="form-row">
+      <div><label>Date</label><input id="f_edate" type="date" value="${occDate || e.date || dateStr || todayStr()}"></div>
+      <div><label>Time (optional)</label><input id="f_etime" type="time" value="${e.time || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Type</label><select id="f_etype">${EVENT_TYPES.map(t=>`<option ${e.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div><label>Horse (optional)</label><select id="f_ehorse"><option value="">— Whole barn —</option>${horseOptions(e.horseId)}</select></div>
+    </div>
+    <div class="form-row">
+      <div><label>Repeats</label><select id="f_erepeat" onchange="repeatChanged()">${REPEAT_OPTS.map(t=>`<option ${ (e.repeat||'Does not repeat')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div id="customDaysWrap" style="display:${isCustom ? '' : 'none'}"><label>Every how many days?</label><input id="f_edays" type="number" min="1" placeholder="e.g. 35" value="${e.repeatDays || ''}"></div>
+    </div>
+    <label>Provider — who's coming</label>
+    <select id="f_eprovider" onchange="providerChanged()">
+      <option value="">— No provider —</option>
+      ${providerOptions()}
+      <option value="__add__">＋ Add a new provider…</option>
+    </select>
+    <div id="npWrap" style="display:none; border:1px solid var(--border); border-radius:8px; padding:4px 12px 12px; margin-top:8px">
+      <div class="form-row">
+        <div><label>New provider name *</label><input id="f_npname" placeholder="e.g. Dr. Reyes"></div>
+        <div><label>Type</label><select id="f_nptype">${CONTACT_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      </div>
+      <label>Phone (optional)</label><input id="f_npphone">
+      <div class="meta" style="font-style:italic; margin-top:4px">They'll be saved to your Contacts too.</div>
+    </div>
+    <label>Notes</label><textarea id="f_enotes" rows="2">${esc(e.notes)}</textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveEvent()">Save</button>
+    </div>`);
+  if (e.provider) {
+    const ps = document.getElementById('f_eprovider');
+    ps.value = e.provider;
+    if (ps.value !== e.provider) {
+      ps.insertAdjacentHTML('afterbegin', `<option value="${esc(e.provider)}">${esc(e.provider)}</option>`);
+      ps.value = e.provider;
+    }
+  }
+}
+function saveEvent() {
+  const title = document.getElementById('f_etitle').value.trim();
+  const date = document.getElementById('f_edate').value;
+  if (!title || !date) { alert('Please add a title and date.'); return; }
+  const repeat = document.getElementById('f_erepeat').value;
+  let repeatDays = '';
+  if (repeat === 'Custom…') {
+    repeatDays = parseInt(document.getElementById('f_edays').value, 10);
+    if (!repeatDays || repeatDays < 1) { alert('For a custom repeat, tell me how many days between visits.'); return; }
+  }
+  let provider = document.getElementById('f_eprovider').value;
+  if (provider === '__add__') {
+    const npName = document.getElementById('f_npname').value.trim();
+    if (!npName) { alert('Give the new provider a name (or set provider to none).'); return; }
+    db.contacts.push({
+      id: uid(), name: npName,
+      type: document.getElementById('f_nptype').value,
+      phone: document.getElementById('f_npphone').value.trim(),
+      email: '', business: '', notes: ''
+    });
+    provider = npName;
+  }
+  const data = {
+    title, date,
+    time: document.getElementById('f_etime').value,
+    type: document.getElementById('f_etype').value,
+    horseId: document.getElementById('f_ehorse').value,
+    repeat, repeatDays,
+    provider,
+    notes: document.getElementById('f_enotes').value.trim()
+  };
+  if (_evEditId) {
+    const ev = db.events.find(x => x.id === _evEditId);
+    if (ev) {
+      const repeatChanged_ = ev.repeat !== data.repeat || ev.date !== data.date;
+      Object.assign(ev, data);
+      if (repeatChanged_) ev.exceptions = []; // fresh series pattern
+    }
+    _evEditId = '';
+  } else {
+    db.events.push(Object.assign({ id: uid(), exceptions: [] }, data));
+  }
+  closeModal(); save();
+}
+
+// ---- occurrence vs. series (EMR-style) ----
+let _scopeCbs = { one: null, all: null };
+function openScopeModal(verb, dateLabel) {
+  openModal(`
+    <h3>${verb === 'delete' ? 'Delete' : 'Edit'} repeating appointment</h3>
+    <p style="margin-bottom:6px">This appointment repeats. ${verb === 'delete' ? 'Delete' : 'Edit'} just the visit on <strong>${dateLabel}</strong>, or the whole series?</p>
+    <div class="modal-btns" style="flex-wrap:wrap">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="_scopeCbs.one()">Just this visit</button>
+      <button class="btn danger" onclick="_scopeCbs.all()">Whole series</button>
+    </div>`);
+}
+function isRepeating(e) { return e && e.repeat && e.repeat !== 'Does not repeat'; }
+function deleteEventOcc(id, date) {
+  if (!isStaff()) return;
+  const e = db.events.find(x => x.id === id);
+  if (!e) return;
+  if (!isRepeating(e)) {
+    if (confirm('Delete this event?')) { db.events = db.events.filter(x => x.id !== id); save(); }
+    return;
+  }
+  _scopeCbs = {
+    one: () => { e.exceptions = e.exceptions || []; e.exceptions.push(date); closeModal(); save(); },
+    all: () => { db.events = db.events.filter(x => x.id !== id); closeModal(); save(); }
+  };
+  openScopeModal('delete', fmtDate(date));
+}
+function editEventOcc(id, date) {
+  if (!isStaff()) return;
+  const e = db.events.find(x => x.id === id);
+  if (!e) return;
+  if (!isRepeating(e)) { openEventForm(null, id); return; }
+  _scopeCbs = {
+    one: () => {
+      // detach this visit: skip it in the series, then open a standalone copy to edit
+      e.exceptions = e.exceptions || []; e.exceptions.push(date);
+      db.events.push({
+        id: uid(), title: e.title, date, time: e.time, type: e.type, horseId: e.horseId,
+        repeat: 'Does not repeat', repeatDays: '', provider: e.provider, notes: e.notes, exceptions: []
+      });
+      const copy = db.events[db.events.length - 1];
+      save();
+      openEventForm(null, copy.id);
+    },
+    all: () => { openEventForm(null, id); }
+  };
+  openScopeModal('edit', fmtDate(date));
+}
+
+const REPEAT_DAYS = { 'Weekly': 7, 'Every 2 weeks': 14, 'Every 4 weeks': 28, 'Every 6 weeks': 42, 'Every 8 weeks': 56 };
+function expandDates(e, horizonDays) {
+  const ex = e.exceptions || [];
+  if (!e.repeat || e.repeat === 'Does not repeat') return ex.includes(e.date) ? [] : [e.date];
+  const out = [];
+  const end = new Date(); end.setDate(end.getDate() + (horizonDays || 180));
+  let d = new Date(e.date + 'T00:00:00');
+  let guard = 0;
+  while (d <= end && guard < 60) {
+    const ds = d.toISOString().slice(0, 10);
+    if (!ex.includes(ds)) out.push(ds);
+    d = new Date(d);
+    if (e.repeat === 'Monthly') d.setMonth(d.getMonth() + 1);
+    else if (e.repeat === 'Custom…') d.setDate(d.getDate() + (parseInt(e.repeatDays, 10) || 7));
+    else d.setDate(d.getDate() + (REPEAT_DAYS[e.repeat] || 7));
+    guard++;
+  }
+  return out;
+}
+
+function getAgenda() {
+  const items = [];
+  db.events.forEach(e => {
+    const isRepeat = e.repeat && e.repeat !== 'Does not repeat';
+    const repeatLabel = !isRepeat ? '' :
+      (e.repeat === 'Custom…' ? 'every ' + (e.repeatDays || '?') + ' days' : e.repeat);
+    expandDates(e).forEach(d => items.push({
+      kind: 'event', id: e.id, date: d, time: e.time,
+      title: e.title, type: e.type, horseId: e.horseId,
+      notes: e.notes, provider: e.provider, repeat: repeatLabel
+    }));
+  });
+  db.health.forEach(r => {
+    if (r.nextDue) items.push({
+      kind: 'health', id: r.id, date: r.nextDue,
+      title: r.type + ' due', type: 'Health reminder', horseId: r.horseId, notes: r.notes
+    });
+  });
+  db.rides.forEach(r => items.push({
+    kind: 'ride', id: r.id, date: r.date, time: r.time || '',
+    title: (r.type || 'Ride') + ' — ' + horseName(r.horseId),
+    type: 'Ride / lesson', horseId: r.horseId, riderName: r.rider || '',
+    notes: [r.rider ? 'Rider: ' + r.rider : '', r.notes || ''].filter(Boolean).join(' — ')
+  }));
+  return items.sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||''));
+}
+
+// what the current user is allowed to see on calendars & event lists
+function agendaForUser() {
+  const items = getAgenda();
+  const u = currentUser();
+  if (!u || isStaff()) return items;
+  return items.filter(it => {
+    if (it.kind === 'ride') return (it.riderName || '').toLowerCase() === u.name.toLowerCase();
+    if (it.kind === 'health') return false;
+    if (it.type === 'Show / competition' || it.type === 'Clinic') return true;
+    return !it.horseId && !['Vet appointment', 'Farrier', 'Care task'].includes(it.type);
+  });
+}
+
+function agendaItem(it, ctx) {
+  const horse = it.horseId ? esc(horseName(it.horseId)) : 'Whole barn';
+  let btns = '';
+  if (isStaff()) {
+    if (it.kind === 'event') btns = `<div style="display:flex;gap:6px">
+      <button class="btn small secondary" onclick="editEventOcc('${it.id}','${it.date}')">Edit</button>
+      <button class="btn small danger" onclick="deleteEventOcc('${it.id}','${it.date}')">Delete</button>
+    </div>`;
+    if (it.kind === 'ride') btns = `<div style="display:flex;gap:6px">
+      <button class="btn small secondary" onclick="openRideForm('','','','${ctx || 'events'}','${it.id}')">Edit</button>
+      <button class="btn small danger" onclick="deleteRideAg('${it.id}','${it.date}','${ctx || 'events'}')">Delete</button>
+    </div>`;
+  }
+  return `<div class="list-item row">
+    <div>
+      ${dueBadge(it.date)}
+      <strong style="margin-left:6px">${esc(it.title)}</strong>
+      <span class="meta">· ${horse}${it.time ? ' · ' + it.time : ''}</span>
+      <div class="meta">${esc(it.type)}${it.provider ? ' · ' + esc(it.provider) : ''}${it.repeat ? ' · ↻ ' + esc(it.repeat.toLowerCase()) : ''}${it.notes ? ' — ' + esc(it.notes) : ''}</div>
+    </div>
+    ${btns}
+  </div>`;
+}
+
+function renderEvents() {
+  const addBtn = document.getElementById('addEventBtn');
+  if (addBtn) addBtn.style.display = isStaff() ? '' : 'none';
+  const agenda = agendaForUser();
+  const overdue = agenda.filter(a => daysUntil(a.date) < 0 && a.kind === 'health');
+  const upcoming = agenda.filter(a => {
+    const n = daysUntil(a.date);
+    return n >= 0 && n <= 120;
+  });
+  const html = overdue.map(a => agendaItem(a, 'events')).join('') + upcoming.map(a => agendaItem(a, 'events')).join('');
+  document.getElementById('eventList').innerHTML = html ||
+    '<div class="empty">Nothing scheduled yet. Add an event, or set "next due" dates on health records.</div>';
+}
+
+// ============ Results & Points ============
+const PLACING_POINTS = { 1: 10, 2: 6, 3: 4, 4: 2, 5: 1, 6: 0.5 };
+const PLACING_LABELS = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th', 0: '—' };
+
+function showNameOptions() {
+  const names = new Set();
+  db.events.filter(e => e.type === 'Show / competition').forEach(e => names.add(e.title));
+  SHOW_FEED.events.filter(s => s.type === 'Show / competition').forEach(s => names.add(s.name));
+  return [...names].map(n => `<option value="${esc(n)}">`).join('');
+}
+function placingChanged() {
+  const p = parseInt(document.getElementById('f_xplacing').value, 10);
+  document.getElementById('f_xpoints').value = PLACING_POINTS[p] !== undefined ? PLACING_POINTS[p] : 0;
+}
+function openResultForm(id) {
+  if (!isStaff()) { alert('Only managers and employees can enter results.'); return; }
+  if (!db.riders.length) { alert('Add rider profiles first.'); return; }
+  const r = id ? (db.results.find(x => x.id === id) || {}) : {};
+  openModal(`
+    <h3>${id ? 'Edit result' : 'Add show result'}</h3>
+    <div class="form-row">
+      <div><label>Rider</label><select id="f_xrider">${db.riders.map(p => `<option ${r.riderName === p.name ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div>
+      <div><label>Horse</label><select id="f_xhorse"><option value="">—</option>${horseOptions(r.horseId)}</select></div>
+    </div>
+    <label>Show</label><input id="f_xshow" list="showNames" value="${esc(r.show)}" placeholder="Pick a show or type one">
+    <datalist id="showNames">${showNameOptions()}</datalist>
+    <div class="form-row">
+      <div><label>Date</label><input id="f_xdate" type="date" value="${r.date || todayStr()}"></div>
+      <div><label>Class / division</label><input id="f_xclass" value="${esc(r.className)}" placeholder="e.g. 2'3&quot; Hunter — Jr/Am"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Placing</label><select id="f_xplacing" onchange="placingChanged()">
+        ${[1,2,3,4,5,6,7,8,0].map(p => `<option value="${p}" ${r.placing === p ? 'selected' : ''}>${PLACING_LABELS[p]}${p === 0 ? ' (participated)' : ''}</option>`).join('')}
+      </select></div>
+      <div><label>Points</label><input id="f_xpoints" type="number" step="0.5" value="${r.points !== undefined ? r.points : 10}"></div>
+    </div>
+    <label>Notes</label><textarea id="f_xnotes" rows="2" placeholder="e.g. Beautiful round, one rail in the handy">${esc(r.notes)}</textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveResult('${id || ''}')">Save</button>
+    </div>`);
+}
+function saveResult(id) {
+  const show = document.getElementById('f_xshow').value.trim();
+  if (!show) { alert('Which show was it?'); return; }
+  const data = {
+    riderName: document.getElementById('f_xrider').value,
+    horseId: document.getElementById('f_xhorse').value,
+    show,
+    date: document.getElementById('f_xdate').value || todayStr(),
+    className: document.getElementById('f_xclass').value.trim(),
+    placing: parseInt(document.getElementById('f_xplacing').value, 10),
+    points: parseFloat(document.getElementById('f_xpoints').value) || 0,
+    notes: document.getElementById('f_xnotes').value.trim()
+  };
+  if (id) Object.assign(db.results.find(x => x.id === id), data);
+  else db.results.push(Object.assign({ id: uid() }, data));
+  closeModal(); save();
+}
+function deleteResult(id) {
+  if (!isStaff()) return;
+  if (!confirm('Remove this result?')) return;
+  db.results = db.results.filter(x => x.id !== id); save();
+}
+function seasonPoints(name, year) {
+  year = String(year || new Date().getFullYear());
+  return db.results.reduce((s, r) =>
+    s + ((r.riderName.toLowerCase() === name.toLowerCase() && (r.date || '').startsWith(year)) ? (parseFloat(r.points) || 0) : 0), 0);
+}
+function ribbonBadge(p) {
+  return `<span class="ribbon r${p >= 1 && p <= 8 ? p : 0}" title="${PLACING_LABELS[p] || ''}">${p >= 1 && p <= 8 ? p : '·'}</span>`;
+}
+function resultLine(r, staff) {
+  return `<div class="list-item row">
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      ${ribbonBadge(r.placing)}
+      <div>
+        <strong>${esc(r.className || 'Class')}</strong> <span class="meta">· ${esc(r.show)} · ${fmtDate(r.date)}</span>
+        <div class="meta">${esc(r.riderName)}${r.horseId ? ' on ' + esc(horseName(r.horseId)) : ''} · ${r.points} pt${r.points === 1 ? '' : 's'}${r.notes ? ' — ' + esc(r.notes) : ''}</div>
+      </div>
+    </div>
+    ${staff ? `<div style="display:flex;gap:6px">
+      <button class="btn small secondary" onclick="openResultForm('${r.id}')">Edit</button>
+      <button class="btn small danger" onclick="deleteResult('${r.id}')">Delete</button>
+    </div>` : ''}
+  </div>`;
+}
+function renderResults() {
+  const el = document.getElementById('resultsList');
+  if (!el) return;
+  const u = currentUser() || {};
+  const staff = isStaff();
+  const btn = document.getElementById('addResultBtn');
+  if (btn) btn.style.display = staff ? '' : 'none';
+  const year = new Date().getFullYear();
+
+  // leaderboard: everyone with points this season
+  const standings = db.riders.map(p => ({ name: p.name, pts: seasonPoints(p.name, year) }))
+    .filter(x => x.pts > 0).sort((a, b) => b.pts - a.pts);
+  const lb = standings.length ? `
+    <div class="card">
+      <h3 class="entity">${year} Season Standings</h3>
+      ${standings.map((x, i) => `
+        <div class="lb-row">
+          <span class="lb-rank">${i + 1}</span>
+          <span style="font-weight:${x.name.toLowerCase() === (u.name || '').toLowerCase() ? '700' : '400'}">${esc(x.name)}${x.name.toLowerCase() === (u.name || '').toLowerCase() ? ' (you)' : ''}</span>
+          <span class="lb-pts">${x.pts} pts</span>
+        </div>`).join('')}
+      <div class="meta" style="font-style:italic;margin-top:8px">Default scale: 1st=10 · 2nd=6 · 3rd=4 · 4th=2 · 5th=1 · 6th=½ — points are editable per result to match SNHSA's rulebook.</div>
+    </div>` : '';
+
+  let results = db.results.slice().sort((a, b) => b.date.localeCompare(a.date));
+  let mine = '';
+  if (!staff) {
+    const own = results.filter(r => r.riderName.toLowerCase() === (u.name || '').toLowerCase());
+    mine = `<div class="card">
+      <div class="row"><h3 class="entity">My results</h3>
+        <span class="badge ok">${seasonPoints(u.name || '', year)} pts this season</span></div>
+      ${own.length ? own.map(r => resultLine(r, false)).join('') : '<div class="empty">No results yet — your ribbons will live here.</div>'}
+    </div>`;
+    el.innerHTML = mine + lb;
+    return;
+  }
+  el.innerHTML = lb + `<div class="card">
+    <h3 class="entity">All results</h3>
+    ${results.length ? results.map(r => resultLine(r, true)).join('') : '<div class="empty">No results yet — add the first ribbon after your next show.</div>'}
+  </div>`;
+}
+
+// ============ Show Bulletin (real-world events) ============
+// Pulled from snhsa.org/events — ask Claude to refresh this list anytime.
+const SHOW_FEED = {
+  updated: '2026-07-13',
+  region: 'Reno / Northern Nevada',
+  events: [
+    { name: 'SNHSA Braiding Clinic with Lisa Mays', start: '2026-07-15', end: '', time: '9:00 AM – 4:00 PM',
+      venue: 'The Historic Silver Circle Ranch, 3400 Holcomb Ranch Ln, Reno NV', type: 'Clinic',
+      notes: 'Hands-on braiding clinic by Lisa Mays of A-MAYS-ING Equine.', url: 'https://snhsa.org/event/snhsa-sponsored-braiding-clinic-with-lisa-mays/' },
+    { name: 'Rosemary Meadows July Finale', start: '2026-07-17', end: '2026-07-19', time: '',
+      venue: 'Rosemary Meadows Equestrian, 1115 N Cantlon Ln, Reno NV', type: 'Show / competition',
+      deadline: { date: '2026-07-14', note: 'Pre-registration closes 8 PM' },
+      notes: '', url: 'https://snhsa.org/event/rosemary-meadows-finale/' },
+    { name: 'AJA Equine & Pair of Aces Outreach Show', start: '2026-08-08', end: '2026-08-09', time: '',
+      venue: 'Reno-Sparks Livestock Events Center, 1350 N Wells Ave, Reno NV', type: 'Show / competition',
+      notes: 'AJA Equine Saturday, Pair of Aces Stables Sunday — at the Nevada State Fairgrounds.', url: 'https://snhsa.org/event/aja-equine-saturday-and-pair-of-aces-stables-sunday-outreach-show/' },
+    { name: 'Franktown Meadows Summer Outreach Show', start: '2026-08-22', end: '2026-08-23', time: '',
+      venue: 'Franktown Meadows Equestrian Facility, 4200 Old US Hwy 395, Washoe Valley NV', type: 'Show / competition',
+      notes: 'Features the SNHSA Pro/Jr-Am Speed Derby and 4 Stakes classes.', url: 'https://snhsa.org/event/franktown-meadows-outreach-show/' },
+    { name: 'Pair of Aces Stables Fall Outreach Horse Show', start: '2026-09-12', end: '2026-09-13', time: '',
+      venue: 'The Historic Silver Circle Ranch, 3400 Holcomb Ranch Ln, Reno NV', type: 'Show / competition',
+      notes: '', url: 'https://snhsa.org/event/pair-of-aces-stables-fall-outreach-horse-show/' },
+    { name: 'AJA Equine 2-Day Outreach Horse Show', start: '2026-09-26', end: '2026-09-27', time: '',
+      venue: 'Ironwood Events Center, 5600 Whiskey Springs Rd, Reno NV', type: 'Show / competition',
+      notes: '', url: 'https://snhsa.org/event/aja-equine-2-day-outreach-horse-show-4/' },
+    { name: 'Franktown Meadows Fall Outreach Show', start: '2026-10-10', end: '2026-10-11', time: '',
+      venue: 'Franktown Meadows Equestrian Facility, 4200 Old US Hwy 395, Washoe Valley NV', type: 'Show / competition',
+      notes: 'Features the SNHSA Mini Medal and Junior/Amateur Medal.', url: 'https://snhsa.org/event/franktown-meadows-outreach-show-2/' },
+    { name: '2026 SNHSA Year-End Awards Banquet', start: '2027-01-30', end: '', time: '4:30 – 9:00 PM',
+      venue: 'Atlantis Casino Resort Spa, 3800 S Virginia St, Reno NV', type: 'Other',
+      notes: 'Year-end awards celebration.', url: 'https://snhsa.org/event/2026-snhsa-year-end-awards-banquet/' }
+  ]
+};
+const SHOW_LINKS = [
+  { label: 'SNHSA full calendar', url: 'https://snhsa.org/events/' },
+  { label: '2026 season calendar (PDF)', url: 'https://snhsa.org/wp-content/uploads/2026/07/SNHSA-2026-season-calendar-7-6-26.pdf' },
+  { label: 'SNHSA rulebook', url: 'https://snhsa.org/competition/rulebook/' },
+  { label: 'USHJA competition portal (national)', url: 'https://www.ushja.org/competition' },
+  { label: 'Year-end point standings', url: 'https://snhsa.org/competition/year-end-point-standings/' }
+];
+
+function showOnCalendar(s) {
+  return db.events.some(e => e.title === s.name && e.date === s.start);
+}
+function addShowToCalendar(i) {
+  if (!isStaff()) { alert('Only managers and employees can add to the barn calendar.'); return; }
+  const s = SHOW_FEED.events[i];
+  if (!s || showOnCalendar(s)) return;
+  const notes = [s.venue, s.end ? 'Runs through ' + fmtDate(s.end) : '', s.time, s.notes, 'Details: ' + s.url]
+    .filter(Boolean).join(' · ');
+  db.events.push({
+    id: uid(), title: s.name, date: s.start, time: '',
+    type: s.type, horseId: '', repeat: 'Does not repeat', repeatDays: '',
+    provider: '', notes, exceptions: []
+  });
+  if (s.deadline && daysUntil(s.deadline.date) >= 0) {
+    db.events.push({
+      id: uid(), title: 'Entry deadline — ' + s.name, date: s.deadline.date, time: '',
+      type: 'Other', horseId: '', repeat: 'Does not repeat', repeatDays: '',
+      provider: '', notes: (s.deadline.note || '') + ' · ' + s.url, exceptions: []
+    });
+  }
+  save();
+  showToast('Added to the barn calendar ✓' + (s.deadline ? ' (with entry deadline reminder)' : ''));
+}
+function renderBulletin() {
+  const el = document.getElementById('bulletinList');
+  if (!el) return;
+  const staff = isStaff();
+  const upcoming = SHOW_FEED.events.filter(s => daysUntil(s.start) >= -1);
+  let lastMonth = '';
+  let html = `
+    <div class="card" style="text-align:center">
+      <div class="meta">Curated from <a href="https://snhsa.org/events/" target="_blank" rel="noopener" style="color:var(--blue-deep)">snhsa.org</a>
+        · ${esc(SHOW_FEED.region)} · list updated ${fmtDate(SHOW_FEED.updated)}</div>
+      <div class="meta" style="font-style:italic">Riders &amp; parents: tap any show for details and entry info.</div>
+    </div>`;
+  upcoming.forEach((s, idx) => {
+    const i = SHOW_FEED.events.indexOf(s);
+    const month = new Date(s.start + 'T00:00:00').toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    if (month !== lastMonth) { html += `<div class="section-title">${month}</div>`; lastMonth = month; }
+    const dates = fmtDate(s.start) + (s.end ? ' – ' + fmtDate(s.end) : '') + (s.time ? ' · ' + s.time : '');
+    const added = showOnCalendar(s);
+    html += `<div class="card">
+      <div class="row">
+        <div style="flex:1;min-width:220px">
+          <h3 class="entity">${esc(s.name)}</h3>
+          <div class="meta"><span class="badge type">${esc(s.type === 'Show / competition' ? 'Show' : s.type)}</span>
+            <strong style="margin-left:6px">${dates}</strong></div>
+          <div class="meta">📍 ${esc(s.venue)}</div>
+          ${s.deadline ? `<div class="meta" style="color:var(--warn)">⏰ Entry deadline: ${fmtDate(s.deadline.date)}${s.deadline.note ? ' — ' + esc(s.deadline.note) : ''}</div>` : ''}
+          ${s.notes ? `<div class="meta" style="font-style:italic">${esc(s.notes)}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <a class="btn small secondary" style="text-decoration:none" href="${s.url}" target="_blank" rel="noopener">Details ↗</a>
+          ${staff ? (added
+            ? '<span class="badge ok">On the calendar ✓</span>'
+            : `<button class="btn small" onclick="addShowToCalendar(${i})">+ Add to calendar</button>`) : ''}
+        </div>
+      </div>
+    </div>`;
+  });
+  html += `<div class="section-title">Resources</div>
+    <div class="card">${SHOW_LINKS.map(l =>
+      `<div class="list-item"><a href="${l.url}" target="_blank" rel="noopener" style="color:var(--blue-deep)">${esc(l.label)} ↗</a></div>`).join('')}
+      <div class="meta" style="font-style:italic;margin-top:10px">This list is a snapshot — ask Claude to refresh it from snhsa.org whenever a new season posts. USHJA-rated shows can be added the same way.</div>
+    </div>`;
+  el.innerHTML = html;
+}
+
+// ============ Billing ============
+const CHARGE_CATEGORIES = ['Monthly board', 'Lesson', 'Training ride', 'Farrier (pass-through)', 'Vet (pass-through)', 'Show fees', 'Supplements', 'Other'];
+const PAY_METHODS = ['Cash', 'Check', 'Venmo', 'Zelle', 'Card', 'Other'];
+
+function money(n) {
+  const v = Math.abs(n).toFixed(2);
+  return (n < 0 ? '−$' : '$') + v.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function billingClients() {
+  const set = new Set(db.riders.map(r => r.name));
+  db.ledger.forEach(l => set.add(l.client));
+  return [...set].sort();
+}
+function clientBalance(name) {
+  return db.ledger.reduce((sum, l) => {
+    if (l.client.toLowerCase() !== name.toLowerCase()) return sum;
+    return sum + (l.kind === 'charge' ? l.amount : -l.amount);
+  }, 0);
+}
+function clientOptions(sel) {
+  return billingClients().map(n => `<option ${n === sel ? 'selected' : ''}>${esc(n)}</option>`).join('');
+}
+function openChargeForm(client) {
+  if (!isManager()) { alert('Only managers can add charges.'); return; }
+  if (!billingClients().length) { alert('Add rider profiles first — charges are billed to clients.'); return; }
+  openModal(`
+    <h3>Add charge</h3>
+    <label>Client</label><select id="f_bclient">${clientOptions(client)}</select>
+    <div class="form-row">
+      <div><label>Category</label><select id="f_bcat">${CHARGE_CATEGORIES.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div><label>Amount ($) *</label><input id="f_bamount" type="number" step="0.01" min="0" placeholder="e.g. 650"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Date</label><input id="f_bdate" type="date" value="${todayStr()}"></div>
+      <div><label>Description</label><input id="f_bdesc" placeholder="e.g. July board — Willow"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveLedger('charge')">Save</button>
+    </div>`);
+}
+function openPaymentForm(client) {
+  if (!isManager()) { alert('Only managers can record payments.'); return; }
+  if (!billingClients().length) { alert('Add rider profiles first.'); return; }
+  openModal(`
+    <h3>Record payment</h3>
+    <label>Client</label><select id="f_bclient">${clientOptions(client)}</select>
+    <div class="form-row">
+      <div><label>Amount ($) *</label><input id="f_bamount" type="number" step="0.01" min="0" placeholder="e.g. 650"></div>
+      <div><label>Method</label><select id="f_bcat">${PAY_METHODS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-row">
+      <div><label>Date</label><input id="f_bdate" type="date" value="${todayStr()}"></div>
+      <div><label>Note</label><input id="f_bdesc" placeholder="optional"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveLedger('payment')">Save</button>
+    </div>`);
+}
+function saveLedger(kind) {
+  const amount = parseFloat(document.getElementById('f_bamount').value);
+  if (!amount || amount <= 0) { alert('Please enter an amount.'); return; }
+  db.ledger.push({
+    id: uid(), kind,
+    client: document.getElementById('f_bclient').value,
+    category: document.getElementById('f_bcat').value,
+    desc: document.getElementById('f_bdesc').value.trim(),
+    amount: Math.round(amount * 100) / 100,
+    date: document.getElementById('f_bdate').value || todayStr()
+  });
+  closeModal(); save();
+}
+function deleteLedger(id) {
+  if (!isManager()) return;
+  if (!confirm('Remove this line item?')) return;
+  db.ledger = db.ledger.filter(l => l.id !== id); save();
+}
+function unbilledLessons(client) {
+  return db.rides.filter(r =>
+    r.rider && r.rider.toLowerCase() === client.toLowerCase() &&
+    !r.billed && daysUntil(r.date) <= 0);
+}
+function billLessons(client) {
+  if (!isManager()) return;
+  const lessons = unbilledLessons(client);
+  if (!lessons.length) { alert('No unbilled past lessons for ' + client + '.'); return; }
+  const rate = parseFloat(prompt('Rate per lesson for ' + client + ' ($):', db.settings.lessonRate || '60'));
+  if (!rate || rate <= 0) return;
+  db.settings.lessonRate = rate;
+  lessons.forEach(r => {
+    db.ledger.push({
+      id: uid(), kind: 'charge', client, category: 'Lesson',
+      desc: (r.type || 'Lesson') + ' on ' + horseName(r.horseId) + ' — ' + fmtDate(r.date),
+      amount: rate, date: r.date
+    });
+    r.billed = true;
+  });
+  save(); showToast(lessons.length + ' lesson' + (lessons.length === 1 ? '' : 's') + ' billed ✓');
+}
+function ledgerLine(l, manager) {
+  const sign = l.kind === 'charge' ? '' : '−';
+  return `<div class="list-item row">
+    <div>
+      <span class="badge ${l.kind === 'charge' ? 'type' : 'ok'}">${l.kind === 'charge' ? esc(l.category) : 'Payment · ' + esc(l.category)}</span>
+      <strong style="margin-left:6px">${sign}${money(l.amount).replace('−','')}</strong>
+      <span class="meta">· ${fmtDate(l.date)}</span>
+      ${l.desc ? `<div class="meta">${esc(l.desc)}</div>` : ''}
+    </div>
+    ${manager ? `<button class="btn small danger" onclick="deleteLedger('${l.id}')">Delete</button>` : ''}
+  </div>`;
+}
+function renderBilling() {
+  const el = document.getElementById('billingList');
+  if (!el) return;
+  const u = currentUser() || {};
+  const manager = isManager();
+  const cbtn = document.getElementById('addChargeBtn'), pbtn = document.getElementById('addPaymentBtn');
+  if (cbtn) { cbtn.style.display = manager ? '' : 'none'; pbtn.style.display = manager ? '' : 'none'; }
+
+  if (!manager) {
+    // rider: own statement only
+    const items = db.ledger.filter(l => l.client.toLowerCase() === (u.name || '').toLowerCase())
+      .sort((a, b) => b.date.localeCompare(a.date));
+    const bal = clientBalance(u.name || '');
+    el.innerHTML = `
+      <div class="card">
+        <div class="row">
+          <h3 class="entity">Your statement</h3>
+          <span class="badge ${bal > 0 ? 'soon' : 'ok'}" style="font-size:.85rem">${bal > 0 ? 'Balance due: ' + money(bal) : bal < 0 ? 'Credit: ' + money(-bal) : 'Paid up 🎉'}</span>
+        </div>
+        ${items.length ? items.map(l => ledgerLine(l, false)).join('') : '<div class="empty">No charges yet.</div>'}
+        <div class="meta" style="font-style:italic;margin-top:10px">Payments are handled at the barn for now — online payment is coming.</div>
+      </div>`;
+    return;
+  }
+  const clients = billingClients();
+  if (!clients.length) { el.innerHTML = '<div class="empty card">Add rider profiles first — billing follows your clients.</div>'; return; }
+  const totalOwed = clients.reduce((s, c) => s + Math.max(0, clientBalance(c)), 0);
+  el.innerHTML = `<div class="meta" style="margin-bottom:12px">Outstanding across the barn: <strong>${money(totalOwed)}</strong></div>` +
+    clients.map(c => {
+      const bal = clientBalance(c);
+      const items = db.ledger.filter(l => l.client.toLowerCase() === c.toLowerCase())
+        .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+      const unb = unbilledLessons(c).length;
+      return `<div class="card">
+        <div class="row">
+          <h3 class="entity">${esc(c)}</h3>
+          <span class="badge ${bal > 0 ? 'soon' : 'ok'}" style="font-size:.85rem">${bal > 0 ? 'Owes ' + money(bal) : bal < 0 ? 'Credit ' + money(-bal) : 'Paid up'}</span>
+        </div>
+        ${items.length ? items.map(l => ledgerLine(l, true)).join('') : '<div class="empty" style="padding:14px">No activity yet.</div>'}
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn small" onclick="openChargeForm('${esc(c)}')">+ Charge</button>
+          <button class="btn small secondary" onclick="openPaymentForm('${esc(c)}')">+ Payment</button>
+          ${unb ? `<button class="btn small secondary" onclick="billLessons('${esc(c)}')">Bill ${unb} lesson${unb === 1 ? '' : 's'}</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ============ Ride stats ============
+const STAT_PERIODS = [
+  { label: 'Week', days: 7 }, { label: '2 weeks', days: 14 }, { label: 'Month', days: 30 },
+  { label: '3 months', days: 91 }, { label: 'Year', days: 365 }
+];
+let _statDays = 7;
+function setStatPeriod(n) { _statDays = n; renderStats(); }
+function statsFor(horseId, days) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = new Date(today); start.setDate(start.getDate() - (days - 1));
+  const rides = db.rides.filter(r => {
+    if (r.horseId !== horseId) return false;
+    const d = new Date(r.date + 'T00:00:00');
+    return d >= start && d <= today;
+  });
+  const jump = rides.filter(r => r.type === 'Jumping').length;
+  const flat = rides.filter(r => r.type === 'Flatwork').length;
+  const mins = rides.reduce((sum, r) => sum + (parseInt(r.duration, 10) || 0), 0);
+  return { total: rides.length, jump, flat, oth: rides.length - jump - flat, mins };
+}
+function renderStats() {
+  const pEl = document.getElementById('statPeriods');
+  if (!pEl) return;
+  pEl.innerHTML = STAT_PERIODS.map(p =>
+    `<button class="btn small ${p.days === _statDays ? '' : 'secondary'}" onclick="setStatPeriod(${p.days})">${p.label}</button>`).join('');
+  const el = document.getElementById('statChart');
+  if (!db.horses.length) { el.innerHTML = '<div class="empty">Add horses to see their workload.</div>'; return; }
+  const rows = db.horses.map(h => ({ h, s: statsFor(h.id, _statDays) }))
+    .sort((a, b) => b.s.total - a.s.total);
+  const max = Math.max(1, ...rows.map(r => r.s.total));
+  const grand = rows.reduce((sum, r) => sum + r.s.total, 0);
+  el.innerHTML = `
+    <div class="legend">
+      <span><span class="sw" style="background:var(--blue-deep)"></span>Jumping</span>
+      <span><span class="sw" style="background:var(--sage-deep)"></span>Flatwork</span>
+      <span><span class="sw" style="background:var(--grey)"></span>Other (trail, lunging, lessons…)</span>
+      <span style="margin-left:auto"><strong>${grand}</strong> ride${grand === 1 ? '' : 's'} barn-wide</span>
+    </div>
+    ${rows.map(({ h, s }) => `
+      <div class="stat-row">
+        <div class="sr-head">
+          <span class="sr-name">${esc(h.name)}</span>
+          <span class="meta">${s.total} ride${s.total === 1 ? '' : 's'}${s.total ? ` — ${s.jump} jumping · ${s.flat} flat · ${s.oth} other` : ''}${s.mins ? ` · ${Math.round(s.mins / 60 * 10) / 10} hrs` : ''}</span>
+        </div>
+        <div class="statbar" title="${esc(h.name)}: ${s.total} rides">
+          ${s.jump ? `<div class="seg jump" style="width:${s.jump / max * 100}%"></div>` : ''}
+          ${s.flat ? `<div class="seg flat" style="width:${s.flat / max * 100}%"></div>` : ''}
+          ${s.oth ? `<div class="seg oth" style="width:${s.oth / max * 100}%"></div>` : ''}
+        </div>
+      </div>`).join('')}`;
+}
+
+// ============ Contacts (providers) ============
+function openContactForm(id) {
+  if (!isManager()) { alert('Only managers can manage contacts.'); return; }
+  const c = db.contacts.find(x => x.id === id) || {};
+  openModal(`
+    <h3>${id ? 'Edit contact' : 'Add a contact'}</h3>
+    <div class="form-row">
+      <div><label>Name *</label><input id="f_cname" value="${esc(c.name)}" placeholder="e.g. Dr. Reyes"></div>
+      <div><label>Type</label><select id="f_ctype">${CONTACT_TYPES.map(t=>`<option ${c.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    </div>
+    <label>Business / practice</label><input id="f_cbiz" value="${esc(c.business)}" placeholder="e.g. Oak Equine Veterinary">
+    <div class="form-row">
+      <div><label>Phone</label><input id="f_cphone" value="${esc(c.phone)}"></div>
+      <div><label>Email</label><input id="f_cemail" value="${esc(c.email)}"></div>
+    </div>
+    <label>Notes</label><textarea id="f_cnotes" rows="2" placeholder="e.g. Text, don't call. Comes every 5 weeks.">${esc(c.notes)}</textarea>
+    <div class="modal-btns">
+      <button class="btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" onclick="saveContact('${id || ''}')">Save</button>
+    </div>`);
+}
+function saveContact(id) {
+  const name = document.getElementById('f_cname').value.trim();
+  if (!name) { alert('Please enter a name.'); return; }
+  const data = {
+    name,
+    type: document.getElementById('f_ctype').value,
+    business: document.getElementById('f_cbiz').value.trim(),
+    phone: document.getElementById('f_cphone').value.trim(),
+    email: document.getElementById('f_cemail').value.trim(),
+    notes: document.getElementById('f_cnotes').value.trim()
+  };
+  if (id) Object.assign(db.contacts.find(c => c.id === id), data);
+  else db.contacts.push(Object.assign({ id: uid() }, data));
+  closeModal(); save();
+}
+function deleteContact(id) {
+  if (!isManager()) return;
+  if (!confirm('Remove this contact?')) return;
+  db.contacts = db.contacts.filter(c => c.id !== id); save();
+}
+function renderContacts() {
+  const el = document.getElementById('contactList');
+  if (!el) return;
+  const contacts = db.contacts.slice().sort((a, b) => (a.type || '').localeCompare(b.type || '') || a.name.localeCompare(b.name));
+  el.innerHTML = contacts.length ? contacts.map(c => `
+    <div class="card">
+      <h3 class="entity">${esc(c.name)}</h3>
+      <div class="meta"><span class="badge type">${esc(c.type || 'Contact')}</span></div>
+      ${c.business ? `<div class="meta" style="margin-top:6px">${esc(c.business)}</div>` : ''}
+      ${c.phone ? `<div class="meta">☎ ${esc(c.phone)}</div>` : ''}
+      ${c.email ? `<div class="meta">✉ ${esc(c.email)}</div>` : ''}
+      ${c.notes ? `<div class="meta" style="font-style:italic">${esc(c.notes)}</div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn small secondary" onclick="openContactForm('${c.id}')">Edit</button>
+        <button class="btn small danger" onclick="deleteContact('${c.id}')">Delete</button>
+      </div>
+    </div>`).join('')
+    : '<div class="empty card" style="grid-column:1/-1">No contacts yet — add your vet, farrier, and bodyworkers. They\'ll appear in the provider dropdown when scheduling.</div>';
+}
+
+// ============ Messages ============
+function postMessage_() {
+  const text = document.getElementById('msgText').value.trim();
+  if (!text) return;
+  const u = currentUser() || { name: 'Anonymous', role: '' };
+  db.messages.unshift({ id: uid(), who: u.name, role: u.role, text, at: new Date().toISOString() });
+  document.getElementById('msgText').value = '';
+  save();
+}
+function deleteMessage(id) { db.messages = db.messages.filter(m => m.id !== id); save(); }
+
+// ---- Private messages (DMs) ----
+let _msgTab = 'board';
+let _dmSel = '';
+function setMsgTab(t) { _msgTab = t; renderMessages(); }
+function dmPartnerChanged() { _dmSel = document.getElementById('dmPartner').value; renderMessages(); }
+function dmKey(a, b) { return [a, b].sort().join('||'); }
+function fmtWhen(at) {
+  return new Date(at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+function dmPartnerOptions(u) {
+  // people the current user may start a direct chat with
+  const set = new Set();
+  if (isStaff()) {
+    db.riders.forEach(r => { if (r.name.toLowerCase() !== u.name.toLowerCase()) set.add(r.name); });
+  } else {
+    db.riders.forEach(r => {
+      if (['Trainer', 'Manager', 'Staff'].includes(r.role) && r.name.toLowerCase() !== u.name.toLowerCase()) set.add(r.name);
+    });
+    set.add('Barn Management');
+  }
+  // anyone who has already messaged them
+  db.dms.forEach(m => {
+    if (m.from === u.name) set.add(m.to);
+    if (m.to === u.name) set.add(m.from);
+  });
+  set.delete(u.name);
+  return [...set].sort();
+}
+function renderDmPane(u) {
+  const sel = document.getElementById('dmPartner');
+  const opts = [];
+  if (isManager()) {
+    // manager sees every thread in the barn
+    const threads = {};
+    db.dms.forEach(m => { threads[dmKey(m.from, m.to)] = [m.from, m.to].sort(); });
+    const keys = Object.keys(threads).sort();
+    if (keys.length) {
+      opts.push(`<optgroup label="All barn conversations">` + keys.map(k =>
+        `<option value="t:${esc(k)}" ${_dmSel === 't:' + k ? 'selected' : ''}>${esc(threads[k][0])} ↔ ${esc(threads[k][1])}</option>`).join('') + `</optgroup>`);
+    }
+  }
+  const people = dmPartnerOptions(u);
+  opts.push(`<optgroup label="Message someone">` + people.map(n =>
+    `<option value="p:${esc(n)}" ${_dmSel === 'p:' + n ? 'selected' : ''}>${esc(n)}</option>`).join('') + `</optgroup>`);
+  sel.innerHTML = opts.join('');
+  const hasSel = Array.from(sel.options).some(o => o.value === _dmSel);
+  if (!_dmSel || !hasSel) _dmSel = sel.value || '';
+  else sel.value = _dmSel;
+
+  let msgs = [], canReply = true;
+  if (_dmSel.startsWith('t:')) {
+    const key = _dmSel.slice(2);
+    msgs = db.dms.filter(m => dmKey(m.from, m.to) === key);
+    canReply = key.split('||').includes(u.name);
+  } else if (_dmSel.startsWith('p:')) {
+    const partner = _dmSel.slice(2);
+    msgs = db.dms.filter(m => dmKey(m.from, m.to) === dmKey(u.name, partner));
+  }
+  msgs = msgs.slice().sort((a, b) => a.at.localeCompare(b.at));
+  document.getElementById('dmThread').innerHTML = msgs.length ? msgs.map(m => `
+    <div class="bubble ${m.from === u.name ? 'mine' : 'theirs'}">
+      ${esc(m.text)}
+      <div class="b-meta">${esc(m.from)} · ${fmtWhen(m.at)}</div>
+    </div>`).join('')
+    : '<div class="empty">No messages yet — say hello.</div>';
+  document.getElementById('dmComposeWrap').style.display = canReply ? '' : 'none';
+  document.getElementById('dmReadOnly').style.display = canReply ? 'none' : '';
+  const th = document.getElementById('dmThread');
+  th.scrollTop = th.scrollHeight;
+}
+function sendDm() {
+  const u = currentUser(); if (!u) return;
+  if (!_dmSel || !_dmSel.startsWith('p:')) { alert('Pick who to message under "Message someone".'); return; }
+  const to = _dmSel.slice(2);
+  const text = document.getElementById('dmText').value.trim();
+  if (!text) return;
+  db.dms.push({ id: uid(), from: u.name, fromRole: u.role, to, text, at: new Date().toISOString() });
+  document.getElementById('dmText').value = '';
+  save();
+}
+
+function renderMessages() {
+  const u = currentUser() || {};
+  const bb = document.getElementById('tabBoardBtn'), bd = document.getElementById('tabDmBtn');
+  if (bb) {
+    bb.classList.toggle('secondary', _msgTab !== 'board');
+    bd.classList.toggle('secondary', _msgTab !== 'dm');
+    document.getElementById('boardPane').style.display = _msgTab === 'board' ? '' : 'none';
+    document.getElementById('dmPane').style.display = _msgTab === 'dm' ? '' : 'none';
+  }
+  document.getElementById('msgList').innerHTML = db.messages.length ? db.messages.map(m => `
+    <div class="msg">
+      <div class="row">
+        <div><span class="who">${esc(m.who)}</span> ${m.role ? '<span class="badge type">' + esc(m.role) + '</span>' : ''}
+          <span class="when">· ${fmtWhen(m.at)}</span></div>
+        ${(isManager() || m.who === u.name) ? `<button class="btn small danger" onclick="deleteMessage('${m.id}')">Delete</button>` : ''}
+      </div>
+      <div style="margin-top:4px">${esc(m.text)}</div>
+    </div>`).join('')
+    : '<div class="empty card">No messages yet — post the first barn note!</div>';
+  if (_msgTab === 'dm' && u.name) renderDmPane(u);
+}
+
+// ============ Boot ============
+function renderAll() {
+  renderHome(); renderCalendar(); renderHorses(); renderRiders(); renderEvents(); renderMessages(); renderContacts(); renderStats(); renderBilling(); renderBulletin(); renderResults(); renderWeather();
+}
+load();
+document.getElementById('siteHeader').style.display = '';
+showView('home');
+if (!currentUser()) openLogin(true);
+initFileSync();
+fetchWeather();
+</script>
+</body>
+</html>
