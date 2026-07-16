@@ -1,0 +1,182 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JumpSync — the signet & favicon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Monsieur+La+Doulaise&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #23221f;
+    --paper: #f2efe7;
+    --board: #dcd8cc;
+    --gold: #a08a55;
+    --soft: #8a8577;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --script: 'Monsieur La Doulaise', cursive;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--board); font-family: var(--serif); color: var(--ink); padding: 44px 20px 90px; }
+  .intro { text-align: center; margin-bottom: 8px; }
+  .intro h1 { font-family: var(--script); font-size: 3.6rem; font-weight: 400; }
+  .intro p { letter-spacing: .3em; text-transform: uppercase; font-size: .7rem; color: #6b675c; }
+  .lede {
+    max-width: 660px; margin: 24px auto 40px; text-align: center;
+    font-size: 1.02rem; line-height: 1.65; color: #55514a; font-style: italic;
+  }
+  .lede b { font-style: normal; }
+  .board { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; max-width: 1280px; margin: 0 auto; }
+  .card {
+    background: var(--paper);
+    border: 1px solid #c9c4b4;
+    box-shadow: 0 3px 8px rgba(40,38,30,.13), 0 14px 34px rgba(40,38,30,.11);
+    padding: 24px 22px 18px; width: 292px; text-align: center;
+  }
+  .card .num { font-size: .66rem; letter-spacing: .3em; color: var(--soft); text-transform: uppercase; }
+  .card h2 { font-size: 1.22rem; font-weight: 600; letter-spacing: .05em; margin: 2px 0 16px; }
+  .hero-slot { height: 150px; display: flex; align-items: center; justify-content: center; }
+  .sizes {
+    display: flex; align-items: flex-end; justify-content: center; gap: 16px;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid #ddd8c8;
+  }
+  .sizes figure { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .sizes figcaption { font-size: .6rem; letter-spacing: .12em; color: var(--soft); }
+  .note { font-size: .88rem; font-style: italic; color: #6b675c; margin-top: 14px; line-height: 1.5; text-align: left; }
+  .tabstrip {
+    max-width: 1280px; margin: 46px auto 0; background: #cfcabc;
+    border-radius: 9px 9px 0 0; padding: 9px 10px 0; display: flex; gap: 6px; align-items: flex-end;
+  }
+  .tab {
+    background: #f2efe7; border-radius: 7px 7px 0 0; padding: 7px 14px 8px;
+    display: flex; align-items: center; gap: 7px; font-size: .78rem; color: #55514a;
+    box-shadow: 0 -1px 2px rgba(0,0,0,.05); max-width: 190px;
+  }
+  .tab.dim { background: #e2ded2; color: #8a8577; }
+  .tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .strip-note { max-width: 1280px; margin: 0 auto; background: #f2efe7; padding: 14px 18px; font-size: .86rem; color: #6b675c; font-style: italic; border-radius: 0 0 9px 9px; }
+  .foot { max-width: 660px; margin: 44px auto 0; text-align: center; font-size: .92rem; color: #6b675c; line-height: 1.65; }
+</style>
+
+<div class="intro">
+  <h1>JumpSync</h1>
+  <p>the signet · works at 16 pixels</p>
+</div>
+
+<div class="lede">
+  The engraved horse is the <b>hero mark</b> — letterhead, saddle pad, the top of the site. It's beautiful and it dies at tab size.
+  This is the other half: the <b>signet</b>. Same estate language — ring, serif, restraint — but built to survive being 16 pixels tall.
+  Every mark below is shown at real favicon size on the right. <b>Judge them at 16, not at 128.</b>
+</div>
+
+<div class="board">
+
+  <!-- I — THE SIGNET -->
+  <div class="card">
+    <div class="num">Signet I</div>
+    <h2>The Seal</h2>
+    <div class="hero-slot">
+      <svg viewBox="0 0 100 100" width="140" height="140" aria-label="JumpSync seal">
+        <circle cx="50" cy="50" r="47" fill="#23221f"/>
+        <circle cx="50" cy="50" r="41.5" fill="none" stroke="#f2efe7" stroke-width="1" opacity=".55"/>
+        <text x="50" y="67" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif"
+              font-size="52" font-weight="600" fill="#f2efe7" letter-spacing="-2">JS</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <figure><svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="47" fill="#23221f"/><circle cx="50" cy="50" r="41.5" fill="none" stroke="#f2efe7" stroke-width="1" opacity=".55"/><text x="50" y="67" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="52" font-weight="600" fill="#f2efe7" letter-spacing="-2">JS</text></svg><figcaption>64</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="47" fill="#23221f"/><circle cx="50" cy="50" r="41.5" fill="none" stroke="#f2efe7" stroke-width="1" opacity=".55"/><text x="50" y="67" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="52" font-weight="600" fill="#f2efe7" letter-spacing="-2">JS</text></svg><figcaption>32</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="47" fill="#23221f"/><circle cx="50" cy="50" r="41.5" fill="none" stroke="#f2efe7" stroke-width="1" opacity=".55"/><text x="50" y="67" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="52" font-weight="600" fill="#f2efe7" letter-spacing="-2">JS</text></svg><figcaption>16</figcaption></figure>
+    </div>
+    <div class="note">Wax seal. Solid ink, cream letters, one hairline ring. The most legible of the four at 16 — the dark disc holds its shape against any tab colour.</div>
+  </div>
+
+  <!-- II — THE RING -->
+  <div class="card">
+    <div class="num">Signet II</div>
+    <h2>The Ring</h2>
+    <div class="hero-slot">
+      <svg viewBox="0 0 100 100" width="140" height="140" aria-label="JumpSync ring">
+        <circle cx="50" cy="50" r="46" fill="#f2efe7" stroke="#23221f" stroke-width="2"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#23221f" stroke-width=".7"/>
+        <text x="50" y="66" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif"
+              font-size="48" font-weight="600" fill="#23221f" letter-spacing="-1.5">JS</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <figure><svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="46" fill="#f2efe7" stroke="#23221f" stroke-width="2"/><circle cx="50" cy="50" r="40" fill="none" stroke="#23221f" stroke-width=".7"/><text x="50" y="66" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="48" font-weight="600" fill="#23221f" letter-spacing="-1.5">JS</text></svg><figcaption>64</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="46" fill="#f2efe7" stroke="#23221f" stroke-width="2"/><circle cx="50" cy="50" r="40" fill="none" stroke="#23221f" stroke-width=".7"/><text x="50" y="66" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="48" font-weight="600" fill="#23221f" letter-spacing="-1.5">JS</text></svg><figcaption>32</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="46" fill="#f2efe7" stroke="#23221f" stroke-width="2"/><circle cx="50" cy="50" r="40" fill="none" stroke="#23221f" stroke-width=".7"/><text x="50" y="66" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="48" font-weight="600" fill="#23221f" letter-spacing="-1.5">JS</text></svg><figcaption>16</figcaption></figure>
+    </div>
+    <div class="note">The crest's double ring, distilled — the direct descendant of Concept III in your samples. Lighter and more "stationery" than the Seal. Honest warning: the inner hairline is the first thing to vanish at 16.</div>
+  </div>
+
+  <!-- III — THE RAIL -->
+  <div class="card">
+    <div class="num">Signet III</div>
+    <h2>The Rail</h2>
+    <div class="hero-slot">
+      <svg viewBox="0 0 100 100" width="140" height="140" aria-label="JumpSync rail">
+        <circle cx="50" cy="50" r="47" fill="#23221f"/>
+        <text x="50" y="58" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif"
+              font-size="46" font-weight="600" fill="#f2efe7" letter-spacing="-1.5">JS</text>
+        <g stroke="#a08a55" stroke-width="3.4" stroke-linecap="round">
+          <path d="M 27 71 L 73 71"/>
+          <path d="M 27 80 L 73 80"/>
+        </g>
+      </svg>
+    </div>
+    <div class="sizes">
+      <figure><svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="47" fill="#23221f"/><text x="50" y="58" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="46" font-weight="600" fill="#f2efe7" letter-spacing="-1.5">JS</text><g stroke="#a08a55" stroke-width="3.4" stroke-linecap="round"><path d="M 27 71 L 73 71"/><path d="M 27 80 L 73 80"/></g></svg><figcaption>64</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="47" fill="#23221f"/><text x="50" y="58" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="46" font-weight="600" fill="#f2efe7" letter-spacing="-1.5">JS</text><g stroke="#a08a55" stroke-width="3.4" stroke-linecap="round"><path d="M 27 71 L 73 71"/><path d="M 27 80 L 73 80"/></g></svg><figcaption>32</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="47" fill="#23221f"/><text x="50" y="58" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="46" font-weight="600" fill="#f2efe7" letter-spacing="-1.5">JS</text><g stroke="#a08a55" stroke-width="3.4" stroke-linecap="round"><path d="M 27 71 L 73 71"/><path d="M 27 80 L 73 80"/></g></svg><figcaption>16</figcaption></figure>
+    </div>
+    <div class="note">The Seal with two gold rails under the letters — the fence, abstracted. It's the only one that hints at the sport without needing the horse. The gold is the one warm note in the system.</div>
+  </div>
+
+  <!-- IV — THE PLATE -->
+  <div class="card">
+    <div class="num">Signet IV</div>
+    <h2>The Brass Plate</h2>
+    <div class="hero-slot">
+      <svg viewBox="0 0 100 100" width="140" height="140" aria-label="JumpSync plate">
+        <path d="M 12 22 H 88 A 4 4 0 0 1 92 26 V 74 A 4 4 0 0 1 88 78 H 12 A 4 4 0 0 1 8 74 V 26 A 4 4 0 0 1 12 22 Z" fill="#23221f"/>
+        <path d="M 15 27 H 85 A 2 2 0 0 1 87 29 V 71 A 2 2 0 0 1 85 73 H 15 A 2 2 0 0 1 13 71 V 29 A 2 2 0 0 1 15 27 Z" fill="none" stroke="#a08a55" stroke-width=".9"/>
+        <text x="50" y="63" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif"
+              font-size="40" font-weight="600" fill="#f2efe7" letter-spacing="-1">JS</text>
+      </svg>
+    </div>
+    <div class="sizes">
+      <figure><svg viewBox="0 0 100 100" width="64" height="64"><path d="M 12 22 H 88 A 4 4 0 0 1 92 26 V 74 A 4 4 0 0 1 88 78 H 12 A 4 4 0 0 1 8 74 V 26 A 4 4 0 0 1 12 22 Z" fill="#23221f"/><path d="M 15 27 H 85 A 2 2 0 0 1 87 29 V 71 A 2 2 0 0 1 85 73 H 15 A 2 2 0 0 1 13 71 V 29 A 2 2 0 0 1 15 27 Z" fill="none" stroke="#a08a55" stroke-width=".9"/><text x="50" y="63" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="40" font-weight="600" fill="#f2efe7" letter-spacing="-1">JS</text></svg><figcaption>64</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="32" height="32"><path d="M 12 22 H 88 A 4 4 0 0 1 92 26 V 74 A 4 4 0 0 1 88 78 H 12 A 4 4 0 0 1 8 74 V 26 A 4 4 0 0 1 12 22 Z" fill="#23221f"/><path d="M 15 27 H 85 A 2 2 0 0 1 87 29 V 71 A 2 2 0 0 1 85 73 H 15 A 2 2 0 0 1 13 71 V 29 A 2 2 0 0 1 15 27 Z" fill="none" stroke="#a08a55" stroke-width=".9"/><text x="50" y="63" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="40" font-weight="600" fill="#f2efe7" letter-spacing="-1">JS</text></svg><figcaption>32</figcaption></figure>
+      <figure><svg viewBox="0 0 100 100" width="16" height="16"><path d="M 12 22 H 88 A 4 4 0 0 1 92 26 V 74 A 4 4 0 0 1 88 78 H 12 A 4 4 0 0 1 8 74 V 26 A 4 4 0 0 1 12 22 Z" fill="#23221f"/><path d="M 15 27 H 85 A 2 2 0 0 1 87 29 V 71 A 2 2 0 0 1 85 73 H 15 A 2 2 0 0 1 13 71 V 29 A 2 2 0 0 1 15 27 Z" fill="none" stroke="#a08a55" stroke-width=".9"/><text x="50" y="63" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="40" font-weight="600" fill="#f2efe7" letter-spacing="-1">JS</text></svg><figcaption>16</figcaption></figure>
+    </div>
+    <div class="note">The stall nameplate — the brass rectangle screwed to a stable door. Least conventional as a favicon (tabs expect a circle), but the most "estate" object in the set, and it's the one nobody else will have.</div>
+  </div>
+
+</div>
+
+<!-- the honest test -->
+<div class="tabstrip">
+  <div class="tab">
+    <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="47" fill="#23221f"/><circle cx="50" cy="50" r="41.5" fill="none" stroke="#f2efe7" stroke-width="1" opacity=".55"/><text x="50" y="67" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="52" font-weight="600" fill="#f2efe7" letter-spacing="-2">JS</text></svg>
+    <span>JumpSync — Stable Portal</span>
+  </div>
+  <div class="tab dim">
+    <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="46" fill="#f2efe7" stroke="#23221f" stroke-width="2"/><circle cx="50" cy="50" r="40" fill="none" stroke="#23221f" stroke-width=".7"/><text x="50" y="66" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="48" font-weight="600" fill="#23221f" letter-spacing="-1.5">JS</text></svg>
+    <span>JumpSync — Stable Portal</span>
+  </div>
+  <div class="tab dim">
+    <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="47" fill="#23221f"/><text x="50" y="58" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="46" font-weight="600" fill="#f2efe7" letter-spacing="-1.5">JS</text><g stroke="#a08a55" stroke-width="3.4" stroke-linecap="round"><path d="M 27 71 L 73 71"/><path d="M 27 80 L 73 80"/></g></svg>
+    <span>JumpSync — Stable Portal</span>
+  </div>
+  <div class="tab dim">
+    <svg viewBox="0 0 100 100" width="16" height="16"><path d="M 12 22 H 88 A 4 4 0 0 1 92 26 V 74 A 4 4 0 0 1 88 78 H 12 A 4 4 0 0 1 8 74 V 26 A 4 4 0 0 1 12 22 Z" fill="#23221f"/><path d="M 15 27 H 85 A 2 2 0 0 1 87 29 V 71 A 2 2 0 0 1 85 73 H 15 A 2 2 0 0 1 13 71 V 29 A 2 2 0 0 1 15 27 Z" fill="none" stroke="#a08a55" stroke-width=".9"/><text x="50" y="63" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="40" font-weight="600" fill="#f2efe7" letter-spacing="-1">JS</text></svg>
+    <span>JumpSync — Stable Portal</span>
+  </div>
+</div>
+<div class="strip-note">
+  This is the real test — four browser tabs, actual size. Whichever one you can still read here is the answer. Everything else is a poster.
+</div>
+
+<div class="foot">
+  <b>The horse is not here on purpose.</b> The engraved rider from your samples belongs on the hero mark — big, rich, on letterhead — and it can't be drawn in code without turning into another tadpole. That one wants Nano Banana. This set is its small brother: same ring, same serif, same restraint, built to survive a browser tab.
+</div>
