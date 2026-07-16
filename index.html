@@ -386,7 +386,6 @@
     <button class="hbtn" onclick="exportData()">Export</button>
     <button class="hbtn" onclick="document.getElementById('importFile').click()">Import</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-    <button class="hbtn" id="fileBtn" style="display:none"></button>
   </div>
 </header>
 
@@ -772,7 +771,6 @@ function load() {
 // Callers don't await this (that's fine). It renders optimistically, then syncs to the cloud.
 async function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) { /* cache full — non-fatal, cloud is the store now */ }
-  writeBackupFile();               // File System backup still runs
   renderAll();                     // optimistic UI — show the change immediately
   try {
     await syncToCloud();
@@ -911,22 +909,10 @@ function openRecoveryModal() {
     </div>`);
 }
 async function initFileSync() {
-  // ask the browser to never evict our storage
+  // The barn's data lives in the cloud now (Supabase). The old local-file backup —
+  // and its "Not backed up" warning — is retired; the app auto-saves to the server.
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
-  if (!fsaSupported()) return;
-  let h = null;
-  try {
-    h = await idbGet('handle');
-    if (h && await h.queryPermission({ mode: 'readwrite' }) === 'granted') fileHandle = h;
-  } catch (e) {}
-  updateFileBtn();
-  // browser storage wiped but a backup file exists → offer restore front and center
-  if (h && !fileHandle && !hasData()) openRecoveryModal();
 }
-// warn before closing if there's data and no backup file connected
-window.addEventListener('beforeunload', e => {
-  if (!fileHandle && fsaSupported() && hasData()) { e.preventDefault(); e.returnValue = ''; }
-});
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtDate(d) {
