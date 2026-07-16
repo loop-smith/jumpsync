@@ -973,8 +973,7 @@ function setAuthMode(m) { _authMode = m; renderLoginModal(); }
 function renderLoginModal() {
   const signup = _authMode === 'signup';
   openModal(`
-    <svg viewBox="0 0 120 120" style="width:76px;height:76px;display:block;margin:0 auto 6px"><use href="#jsmark"/></svg>
-    <h3 style="text-align:center">${signup ? 'Create your account' : 'Welcome'}</h3>
+    <img src="brand/jumpsync-logo.png" alt="JumpSync" style="width:230px;max-width:82%;display:block;margin:2px auto 10px">
     <p class="meta" style="font-style:italic;text-align:center;margin-bottom:10px">${signup ? 'Set up your barn portal.' : 'Sign in to your barn portal.'}</p>
     <label>Email</label><input id="f_email" type="email" autocomplete="email" placeholder="you@example.com">
     <label>Password</label><input id="f_pass" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" placeholder="${signup ? 'At least 6 characters' : 'Your password'}">
