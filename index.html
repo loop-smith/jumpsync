@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Monsieur+La+Doulaise&family=Mrs+Saint+Delafield&family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #f5f8f6;            /* soft white-green */
@@ -382,7 +383,7 @@
   </div>
   <div class="header-right">
     <span class="user-chip" id="userChip"></span>
-    <button class="hbtn" onclick="openLogin()">Switch user</button>
+    <button class="hbtn" onclick="switchUser()">Switch user</button>
     <button class="hbtn" onclick="exportData()">Export</button>
     <button class="hbtn" onclick="document.getElementById('importFile').click()">Import</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -557,6 +558,205 @@
 const STORE_KEY = 'equitrack-data-v1';
 let db = { horses: [], health: [], rides: [], events: [], riders: [], messages: [], contacts: [], dms: [], ledger: [], results: [], settings: {} };
 
+// ============ Supabase cloud backend ============
+// Publishable (anon) key — safe to embed; every table is protected by row-level security.
+const SUPABASE_URL = 'https://ieslmsaerwxbdglfyjoj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yItRqVK_AeRY3Z1XnrA6Dw_0D8UZ2hC';
+let sb = null;
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+catch (e) { console.error('Supabase client failed to initialise', e); }
+let BARN_ID = null;
+let _cloudIds = {};   // db key -> Set of ids currently in the cloud (for delete detection)
+
+// Entity map: db key -> Postgres table. `rename` lists ONLY the columns whose names
+// differ; every other field maps by identical name. Every table also has id + barn_id.
+// Order matters: parents (horses) come first so FK children upsert after them; deletes run in reverse.
+const ENTITIES = [
+  { key: 'horses',   table: 'horses',
+    rename: { showName: 'show_name', feedGrain: 'feed_grain', feedHay: 'feed_hay',
+              turnoutTime: 'turnout_time', turnoutLoc: 'turnout_loc',
+              turnoutBuddies: 'turnout_buddies', photo: 'photo_url' },
+    numberCols: ['yob'], dateCols: [] },
+  { key: 'riders',   table: 'riders',
+    rename: { historyRiding: 'history_riding', questionnaireDone: 'questionnaire_done' },
+    numberCols: [], dateCols: ['dob'] },
+  { key: 'contacts', table: 'contacts', rename: {}, numberCols: [], dateCols: [] },
+  { key: 'health',   table: 'health_records',
+    rename: { horseId: 'horse_id', nextDue: 'next_due' },
+    numberCols: [], dateCols: ['date', 'next_due'] },
+  { key: 'rides',    table: 'rides',
+    rename: { horseId: 'horse_id' },
+    numberCols: ['duration'], dateCols: ['date'] },
+  { key: 'events',   table: 'events',
+    rename: { horseId: 'horse_id', repeatDays: 'repeat_days' },
+    numberCols: ['repeat_days'], dateCols: ['date'] },
+  { key: 'results',  table: 'results',
+    rename: { riderName: 'rider_name', horseId: 'horse_id', show: 'show_name',
+              className: 'class_name', placing: 'place' },
+    numberCols: ['place', 'points'], dateCols: ['date'] },
+  { key: 'ledger',   table: 'ledger',
+    rename: { desc: 'description' },
+    numberCols: ['amount'], dateCols: ['date'] },
+  { key: 'messages', table: 'messages',
+    rename: { text: 'body' },
+    numberCols: [], dateCols: [] },
+  { key: 'dms',      table: 'dms',
+    rename: { from: 'sender', fromRole: 'sender_role', to: 'recipient', text: 'body' },
+    numberCols: [], dateCols: [] }
+];
+const STRIP_COLS = new Set(['barn_id', 'created_at', 'updated_at']);   // server-managed / meta — never mapped back onto db objects
+function invertMap(o) { const r = {}; for (const k in o) r[o[k]] = k; return r; }
+// '' -> null for int/numeric/date columns (Postgres rejects '' for those)
+function coerceVal(ent, col, v) {
+  if (ent.numberCols.includes(col)) {
+    if (v === '' || v === null || v === undefined) return null;
+    const n = Number(v); return isNaN(n) ? null : n;
+  }
+  if (ent.dateCols.includes(col)) {
+    return (v === '' || v === null || v === undefined) ? null : v;
+  }
+  return v;   // text, boolean, and text[] (exceptions) pass straight through
+}
+function buildRow(ent, item, horseIds) {
+  const row = { id: item.id, barn_id: BARN_ID };
+  for (const k of Object.keys(item)) {
+    if (k === 'id') continue;
+    const col = ent.rename[k] || k;
+    let v = coerceVal(ent, col, item[k]);
+    // a horse_id pointing at a deleted horse would violate the FK on upsert — null it (the schema uses ON DELETE SET NULL)
+    if (col === 'horse_id' && v && horseIds && !horseIds.has(v)) v = null;
+    row[col] = v;
+  }
+  return row;
+}
+function mapRowToApp(ent, row) {
+  const rev = invertMap(ent.rename);
+  const obj = {};
+  for (const col of Object.keys(row)) {
+    if (STRIP_COLS.has(col)) continue;
+    obj[rev[col] || col] = row[col];
+  }
+  return obj;
+}
+function dataURLtoBlob(dataURL) {
+  const parts = dataURL.split(',');
+  const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+  const bin = atob(parts[1]);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+async function findOrCreateBarn() {
+  const { data: barns, error } = await sb.from('barns').select('*').limit(1);
+  if (error) throw error;
+  if (barns && barns[0]) return barns[0];
+  const ins = await sb.from('barns').insert({ name: 'My Barn' }).select().single();
+  if (ins.error) throw ins.error;
+  return ins.data;
+}
+async function findRiderId(barnId, name) {
+  try {
+    const { data } = await sb.from('riders').select('id,name').eq('barn_id', barnId);
+    const m = (data || []).find(r => (r.name || '').toLowerCase() === (name || '').toLowerCase());
+    return m ? m.id : null;
+  } catch (e) { return null; }
+}
+function capRole(r) {   // DB stores lowercase (manager/employee/rider); app uses Manager/Employee/Rider
+  r = (r || 'rider').toString().toLowerCase();
+  return r.charAt(0).toUpperCase() + r.slice(1);
+}
+
+// ---- Load every row for this barn into the in-memory db ----
+async function loadAll() {
+  // settings live in the barns row's jsonb column (never a table)
+  try {
+    const { data: barn } = await sb.from('barns').select('*').eq('id', BARN_ID).maybeSingle();
+    if (barn) {
+      const user = db.settings.user;                       // keep the signed-in identity
+      db.settings = Object.assign({}, barn.settings || {});
+      db.settings.user = user;
+      if (!db.settings.barnName && barn.name) db.settings.barnName = barn.name;
+    }
+  } catch (e) { console.warn('settings load failed', e); }
+  for (const ent of ENTITIES) {
+    try {
+      const { data, error } = await sb.from(ent.table).select('*');
+      if (error) throw error;
+      const rows = data || [];
+      db[ent.key] = rows.map(r => mapRowToApp(ent, r));    // horses: photo_url -> photo
+      _cloudIds[ent.key] = new Set(rows.map(r => r.id));
+    } catch (e) {
+      console.warn('load failed for ' + ent.table, e);
+      _cloudIds[ent.key] = _cloudIds[ent.key] || new Set();
+    }
+  }
+  // barn board renders newest-first (postMessage_ unshifts)
+  if (db.messages) db.messages.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+}
+
+// ---- Push the in-memory db to the cloud. Throws on ANY write failure. ----
+async function syncToCloud() {
+  if (!sb || !BARN_ID) return;   // not signed in yet — offline cache still written by save()
+  // 1. upload any new data:-URL photos, then swap horse.photo to the public URL so it isn't re-uploaded
+  for (const h of db.horses) {
+    if (h.photo && typeof h.photo === 'string' && h.photo.startsWith('data:')) {
+      const blob = dataURLtoBlob(h.photo);
+      const path = BARN_ID + '/' + h.id + '-' + Date.now() + '.jpg';
+      const up = await sb.storage.from('horse-photos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      if (up.error) throw up.error;
+      const { data: pub } = sb.storage.from('horse-photos').getPublicUrl(path);
+      h.photo = pub.publicUrl;
+    }
+  }
+  // 2. upsert every entity (parents first)
+  const horseIds = new Set(db.horses.map(h => h.id));
+  for (const ent of ENTITIES) {
+    const rows = (db[ent.key] || []).map(item => buildRow(ent, item, horseIds));
+    if (rows.length) {
+      const { error } = await sb.from(ent.table).upsert(rows);
+      if (error) throw error;
+    }
+  }
+  // 3. delete rows that vanished (children first), then refresh the id cache
+  for (let i = ENTITIES.length - 1; i >= 0; i--) {
+    const ent = ENTITIES[i];
+    const current = new Set((db[ent.key] || []).map(x => x.id));
+    const prev = _cloudIds[ent.key] || new Set();
+    const gone = [...prev].filter(id => !current.has(id));
+    if (gone.length) {
+      const { error } = await sb.from(ent.table).delete().in('id', gone);
+      if (error) throw error;
+    }
+    _cloudIds[ent.key] = current;
+  }
+  // 4. settings jsonb + barn name
+  const s = db.settings || {};
+  const settingsJson = { barnName: s.barnName, lat: s.lat, lon: s.lon, lessonRate: s.lessonRate };
+  const { error: se } = await sb.from('barns').update({ settings: settingsJson, name: s.barnName || 'My Barn' }).eq('id', BARN_ID);
+  if (se) throw se;
+}
+
+// ---- Boot: init client, resume session or show login ----
+async function boot() {
+  load();                       // offline cache first, so something shows even if we're offline
+  if (!sb) {                    // Supabase library didn't load (offline / blocked CDN) — run from cache
+    if (currentUser()) revealApp(); else openLogin(true);
+    initFileSync(); fetchWeather(); return;
+  }
+  let session = null;
+  try { session = (await sb.auth.getSession()).data.session; }
+  catch (e) { console.warn('getSession failed', e); }
+  if (session) {
+    const ok = await enterApp(session);
+    if (!ok) { db.settings.user = null; openLogin(true); }
+  } else {
+    db.settings.user = null;    // auth state is Supabase-driven, not the local cache
+    openLogin(true);
+  }
+  initFileSync();
+  fetchWeather();
+}
+
 function load() {
   try { const raw = localStorage.getItem(STORE_KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); }
   catch (e) { console.warn('load failed', e); }
@@ -570,12 +770,20 @@ function load() {
     if (h.feed && !h.feedGrain) { h.feedGrain = h.feed; delete h.feed; }
   });
 }
-function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
-  catch (e) { alert('Storage is full — try removing a photo or two, or use smaller images.'); }
-  writeBackupFile();
-  showToast('Saved ✓');
-  renderAll();
+// Callers don't await this (that's fine). It renders optimistically, then syncs to the cloud.
+async function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) { /* cache full — non-fatal, cloud is the store now */ }
+  writeBackupFile();               // File System backup still runs
+  renderAll();                     // optimistic UI — show the change immediately
+  try {
+    await syncToCloud();
+    showToast('Saved ✓');
+    renderAll();                   // reflect photo-URL swaps (data: -> public URL) after upload
+  } catch (e) {
+    // never claim success when a cloud write threw — that was the old silent-data-loss bug
+    console.error('Cloud save failed:', e);
+    showToast('⚠ Not saved to the cloud — your change is on screen only. Check your connection.');
+  }
 }
 
 function showToast(msg) {
@@ -749,9 +957,20 @@ function exportData() {
 function importData(ev) {
   const f = ev.target.files[0]; if (!f) return;
   const r = new FileReader();
-  r.onload = () => {
-    try { db = Object.assign({ horses:[], health:[], rides:[], events:[], riders:[], messages:[], contacts:[], dms:[], ledger:[], results:[], settings:{} }, JSON.parse(r.result)); save(); alert('Data imported!'); }
-    catch { alert('Could not read that file.'); }
+  r.onload = async () => {
+    try {
+      const user = db.settings.user;            // keep the signed-in identity, not the file's
+      db = Object.assign({ horses:[], health:[], rides:[], events:[], riders:[], messages:[], contacts:[], dms:[], ledger:[], results:[], settings:{} }, JSON.parse(r.result));
+      db.settings = db.settings || {};
+      db.settings.user = user;
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (e) {}
+      renderAll();
+      await syncToCloud();                       // push the imported data to the cloud
+      showToast('Data imported ✓');
+    } catch (e) {
+      console.error(e);
+      alert('Could not import that file (or the cloud sync failed).');
+    }
   };
   r.readAsText(f);
   ev.target.value = '';
@@ -762,42 +981,145 @@ function currentUser() { return db.settings.user || null; }
 function isManager() { const u = currentUser(); return u && u.role === 'Manager'; }
 function isStaff() { const u = currentUser(); return u && (u.role === 'Manager' || u.role === 'Employee'); }
 
-function openLogin(firstTime) {
-  const u = currentUser() || {};
+// ---- Supabase Auth (email + password) ----
+let _authMode = 'signin', _authFirst = false;
+function openLogin(firstTime) { _authMode = 'signin'; _authFirst = !!firstTime; renderLoginModal(); }
+function setAuthMode(m) { _authMode = m; renderLoginModal(); }
+function renderLoginModal() {
+  const signup = _authMode === 'signup';
   openModal(`
     <svg viewBox="0 0 120 120" style="width:76px;height:76px;display:block;margin:0 auto 6px"><use href="#jsmark"/></svg>
-    <h3 style="text-align:center">Welcome${u.name ? ' back' : ''}</h3>
-    <p class="meta" style="font-style:italic;text-align:center;margin-bottom:4px">Sign in to your barn portal.</p>
-    ${currentUser() ? '' : `<p class="meta" style="text-align:center;margin:0 auto 10px;max-width:300px;font-size:.82rem;background:#f2efe7;border:1px solid var(--border);border-radius:8px;padding:7px 12px">Just looking? Type any name, leave <b>Manager</b> selected, and press Enter the barn — this is a live demo with no real data.</p>`}
-    <label>Your name</label><input id="f_uname" value="${esc(u.name)}" placeholder="e.g. Alice Cooper">
-    <label>Access level</label>
-    <select id="f_urole">
-      ${['Manager','Employee','Rider'].map(r=>`<option ${u.role===r?'selected':''}>${r}</option>`).join('')}
-    </select>
-    <label>Password <span style="text-transform:none;letter-spacing:0">(riders only — your full name + 1, no spaces)</span></label>
-    <input id="f_upass" type="password" placeholder="e.g. AliceCooper1">
+    <h3 style="text-align:center">${signup ? 'Create your account' : 'Welcome'}</h3>
+    <p class="meta" style="font-style:italic;text-align:center;margin-bottom:10px">${signup ? 'Set up your barn portal.' : 'Sign in to your barn portal.'}</p>
+    <label>Email</label><input id="f_email" type="email" autocomplete="email" placeholder="you@example.com">
+    <label>Password</label><input id="f_pass" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" placeholder="${signup ? 'At least 6 characters' : 'Your password'}">
+    ${signup ? `
+      <label>Your name</label><input id="f_name" placeholder="e.g. Alice Cooper">
+      <label>Access level</label>
+      <select id="f_role">${['Manager','Employee','Rider'].map(r => `<option>${r}</option>`).join('')}</select>
+    ` : ''}
+    <div id="authMsg" class="meta" style="min-height:18px;margin-top:10px;text-align:center"></div>
     <div class="modal-btns">
-      ${firstTime ? '' : '<button class="btn secondary" onclick="closeModal()">Cancel</button>'}
-      <button class="btn" onclick="saveLogin()">Enter the barn</button>
-    </div>`);
+      ${_authFirst ? '' : '<button class="btn secondary" onclick="closeModal()">Cancel</button>'}
+      <button class="btn" onclick="${signup ? 'doSignUp()' : 'doSignIn()'}">${signup ? 'Create account' : 'Sign in'}</button>
+    </div>
+    <p class="meta" style="text-align:center;margin-top:14px">
+      ${signup
+        ? `Already have an account? <a onclick="setAuthMode('signin')" style="color:var(--blue-deep);cursor:pointer;text-decoration:underline">Sign in</a>`
+        : `New here? <a onclick="setAuthMode('signup')" style="color:var(--blue-deep);cursor:pointer;text-decoration:underline">Create an account</a>`}
+    </p>
+    ${signup ? '' : `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px;text-align:center">
+      <button class="btn secondary" style="width:100%" onclick="doDemo()">Just looking? View the demo barn →</button>
+      <p class="meta" style="margin-top:6px;font-size:.78rem">A real example stable — explore it, nothing to set up.</p>
+    </div>`}`);
 }
-function saveLogin() {
-  const name = document.getElementById('f_uname').value.trim();
-  if (!name) { alert('Please enter your name.'); return; }
-  const role = document.getElementById('f_urole').value;
-  if (role === 'Rider') {
-    const prof = db.riders.find(r => r.name.toLowerCase() === name.toLowerCase());
-    if (!prof) { alert('No rider account found under that name — ask the barn to add you as a client first.'); return; }
-    const expected = name.replace(/\s+/g, '') + '1';
-    const given = document.getElementById('f_upass').value.trim();
-    if (given !== expected) { alert('That password doesn\'t match. Hint: your full name with no spaces, then a 1.'); return; }
-    db.settings.user = { name: prof.name, role };
-    closeModal(); save();
-    if (!prof.questionnaireDone) openRiderQuestionnaire();
-    return;
-  }
-  db.settings.user = { name, role };
-  closeModal(); save();
+async function doDemo() {
+  authMsg('Opening the demo barn…');
+  const { data, error } = await sb.auth.signInWithPassword({ email: 'demo@jumpsync.app', password: 'jumpsyncdemo' });
+  if (error) { authMsg('Demo is warming up — try again in a moment.', true); return; }
+  closeModal();
+  await enterApp(data.session);
+}
+function val(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function authMsg(msg, isErr) {
+  const e = document.getElementById('authMsg');
+  if (e) { e.textContent = msg || ''; e.style.color = isErr ? 'var(--danger)' : 'var(--ink-soft)'; }
+}
+
+async function doSignIn() {
+  const email = val('f_email'), password = val('f_pass');
+  if (!email || !password) { authMsg('Enter your email and password.', true); return; }
+  authMsg('Signing in…');
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { authMsg(error.message, true); return; }
+  closeModal();
+  const ok = await enterApp(data.session);
+  if (!ok) { openLogin(true); authMsg('Signed in, but no barn profile was found for this account.', true); }
+}
+
+async function doSignUp() {
+  const email = val('f_email'), password = val('f_pass'), name = val('f_name'), role = val('f_role') || 'Rider';
+  if (!email || !password) { authMsg('Enter an email and password.', true); return; }
+  if (password.length < 6) { authMsg('Password must be at least 6 characters.', true); return; }
+  if (!name) { authMsg('Please enter your name.', true); return; }
+  authMsg('Creating your account…');
+  const { data, error } = await sb.auth.signUp({ email, password });
+  if (error) { authMsg(error.message, true); return; }
+  // remember details in case email confirmation defers the profile insert to first sign-in
+  try { localStorage.setItem('jumpsync-pending-profile', JSON.stringify({ name, role })); } catch (e) {}
+  // SINGLE-BARN model: find the one barn (or create it), then attach a profile
+  try {
+    const barn = await findOrCreateBarn();
+    const row = { id: data.user.id, barn_id: barn.id, full_name: name, role: role.toLowerCase() };
+    if (role === 'Rider') { const rid = await findRiderId(barn.id, name); if (rid) row.rider_id = rid; }
+    const { error: pe } = await sb.from('profiles').upsert(row);
+    if (!pe) { try { localStorage.removeItem('jumpsync-pending-profile'); } catch (e) {} }
+  } catch (e) { console.warn('profile creation deferred to first sign-in', e); }
+  if (!data.session) { authMsg('Check your email to confirm, then Sign in.'); return; }
+  closeModal();
+  const ok = await enterApp(data.session);
+  if (!ok) openLogin(true);
+}
+
+// Load the profile, hydrate the barn, pull all rows, then reveal the app.
+async function enterApp(session) {
+  try {
+    let prof = null;
+    try {
+      const r = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+      prof = r.data;
+    } catch (e) { console.warn('profile fetch failed', e); }
+    if (!prof) prof = await ensureProfileFromPending(session);
+    if (prof) {
+      BARN_ID = prof.barn_id;
+      db.settings.user = { name: prof.full_name || session.user.email, role: capRole(prof.role) };
+      await loadAll();
+    } else if (!currentUser()) {
+      return false;             // no profile and no cached identity — can't enter
+    }
+    revealApp();
+    maybeQuestionnaire(prof);
+    return true;
+  } catch (e) { console.error('enterApp failed', e); return false; }
+}
+
+// Create the profile from the stashed signup details (covers the email-confirmation path).
+async function ensureProfileFromPending(session) {
+  let pending = null;
+  try { pending = JSON.parse(localStorage.getItem('jumpsync-pending-profile') || 'null'); } catch (e) {}
+  if (!pending) return null;
+  try {
+    const barn = await findOrCreateBarn();
+    const row = { id: session.user.id, barn_id: barn.id, full_name: pending.name, role: (pending.role || 'rider').toLowerCase() };
+    if ((pending.role || '') === 'Rider') { const rid = await findRiderId(barn.id, pending.name); if (rid) row.rider_id = rid; }
+    const { data, error } = await sb.from('profiles').upsert(row).select().single();
+    if (error) throw error;
+    localStorage.removeItem('jumpsync-pending-profile');
+    return data;
+  } catch (e) { console.warn('deferred profile creation failed', e); return null; }
+}
+
+function revealApp() {
+  const h = document.getElementById('siteHeader');
+  if (h) h.style.display = '';
+  showView('home');             // showView() calls renderAll()
+}
+function maybeQuestionnaire(prof) {
+  if (!prof || (prof.role || '').toLowerCase() !== 'rider') return;
+  const nm = (prof.full_name || '').toLowerCase();
+  const r = db.riders.find(x => (x.name || '').toLowerCase() === nm);
+  if (!r || !r.questionnaireDone) openRiderQuestionnaire();
+}
+
+async function switchUser() {
+  try { if (sb) await sb.auth.signOut(); } catch (e) {}
+  db.settings.user = null;
+  BARN_ID = null;
+  _cloudIds = {};
+  const h = document.getElementById('siteHeader');
+  if (h) h.style.display = 'none';
+  closeModal();
+  openLogin(true);
 }
 
 function openRiderQuestionnaire() {
@@ -2411,12 +2733,7 @@ function renderMessages() {
 function renderAll() {
   renderHome(); renderCalendar(); renderHorses(); renderRiders(); renderEvents(); renderMessages(); renderContacts(); renderStats(); renderBilling(); renderBulletin(); renderResults(); renderWeather();
 }
-load();
-document.getElementById('siteHeader').style.display = '';
-showView('home');
-if (!currentUser()) openLogin(true);
-initFileSync();
-fetchWeather();
+boot();
 </script>
 </body>
 </html>

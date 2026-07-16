@@ -1,62 +1,62 @@
-# JumpSync — Stable Management Portal
+# JumpSync — Stable Management, in the cloud
 
-A vintage, old-money styled barn management app. Everything lives in one file (`index.html`) — open it in your browser and you're in the barn.
+A barn-management web app: horses, riders, lessons, health records, billing, show
+results, and a live weather-driven blanket check. Built with Claude Code.
 
-*Based in Reno, Nevada · Built July 2026 · Name "JumpSync" is a placeholder (click ✎ rename on the home page).*
+**Live:** https://loop-smith.github.io/jumpsync/
+**Just looking?** Click **"View the demo barn"** on the sign-in screen — a real example
+stable you can explore, nothing to set up.
 
 ---
 
-## Getting started
+## What it is now
 
-1. Open `index.html` in Chrome or Edge.
-2. Sign in with your name and access level.
-3. **First thing, once:** click **"⚠ Not backed up — click to fix"** in the header and save the data file into this folder. Every change auto-saves to it from then on.
+One file (`index.html`) — a single-page app — backed by a real **Supabase** database.
+No build step. Open the URL, sign in, and your barn lives in the cloud: it survives
+reloads, new devices, and cleared browsers, and photos are stored properly (no more
+"storage full").
 
-## Accounts & access
-
-| Role | Sign-in | What they see |
-|---|---|---|
-| **Manager** | name only | Everything — all tiles, all chats, billing, contacts, delete rights |
-| **Employee** | name only | Everything except Billing and Contacts; no delete rights |
-| **Rider** | name + password | Their lessons, shows & barn events, horse profiles (minus feeding), their statement, their results, private chat with staff |
-
-**Rider passwords:** the rider must already exist in Rider Profiles (added by staff). Password = full name, no spaces, plus `1` — e.g. Alice Cooper → `AliceCooper1`. First login walks them through a welcome questionnaire (history, goals, allergies, questions — questions go straight to the manager's messages). *Email logins planned for the hosted version.*
+- **Accounts** — email + password. Three access levels: **Manager** (everything),
+  **Employee** (no billing/contacts, no deletes), **Rider** (their own lessons, horses,
+  statement, results, and private messages with staff).
+- **Cloud data** — Postgres tables with row-level security, so a rider only ever sees
+  their own records. Horse photos go to Supabase Storage.
+- **Live** — pulls the local forecast and, when the overnight low crosses a horse's
+  blanketing rule, names the horses that need a blanket tonight.
 
 ## The tiles
 
-- **Calendar** — month view. Click a day to see or book. Repeating appointments (weekly through every-8-weeks, monthly, or custom every-N-days) expand automatically. Editing/deleting a repeat asks *"just this visit or the whole series?"*
-- **Horses** — profile with photo, barn/show name, breed, age; history & temperament; allergies; grain/hay what-and-when (staff only); turnout time, location & buddies; blanketing rules; assigned riders. Care alerts appear when a vet/farrier date is within 10 days. Weekly ride tally on each card.
-- **Rider Profiles** (staff) — contact, DOB, address, emergency contact, allergies, medical, riding history & goals, upcoming lessons, season points. "Book ride" from any card.
-- **Upcoming Events** — barn agenda. Riders see only their lessons + shows/clinics/barn-wide events. Vet/farrier visits carry a **Provider** so staff know who's coming (mini-EMR).
-- **Message Portal** — public barn board + **Private messages** (rider ↔ staff only; managers see every conversation in the barn).
-- **Contacts** (manager) — vets, farriers, acupuncturists, dentists, etc. These fill the Provider dropdown when scheduling; new providers can be added right inside the event form.
-- **Ride Stats** (staff) — per-horse workload bars over week / 2 weeks / month / 3 months / year, jumping vs. flatwork vs. other, plus saddle hours.
-- **Billing** — charges (board, lessons, pass-throughs, show fees), payments (cash/check/Venmo/Zelle/card), running balances, barn-wide outstanding total. "Bill N lessons" auto-charges unbilled past lessons at your rate. Riders see their own statement. *Online payments (Stripe) planned for the hosted version.*
-- **Show Bulletin** — the real 2026 SNHSA season (from [snhsa.org](https://snhsa.org/events/)) with venues, dates, entry deadlines, detail links, and one-click **Add to barn calendar** (deadline reminders included). USHJA and rulebook links in Resources. Ask Claude to refresh the list anytime.
-- **Results & Points** — show results per rider with true ribbon colors (blue/red/yellow/white/pink/green), points auto-filled from the classic scale (10-6-4-2-1-½, editable to match SNHSA), season standings leaderboard. Riders see "My results" on their account.
+Calendar · Horses · Rider Profiles · Upcoming Events · Message Portal · Contacts ·
+Ride Stats · Billing · Show Bulletin · Results & Points — same features as before,
+now cloud-backed and multi-user.
 
-## Home page extras
+## Running / editing it
 
-- **Tonight at the barn** — live Reno forecast (low, tomorrow, rain). When the low crosses a temperature in any horse's blanketing rules, staff get a blanket-check alert naming the horses.
+It's one static HTML file. To run locally: `python -m http.server` in this folder,
+then open `http://localhost:8000/index.html`. To change it, edit `index.html` and
+push — GitHub Pages redeploys automatically.
 
-## Your data
+The Supabase project URL and **publishable** key are embedded near the top of the first
+`<script>` in `index.html`. That key is safe to publish — row-level security protects
+the data, not the key.
 
-- Auto-saves to browser storage **and** to your backup `.json` file on every change ("Saved ✓" toast confirms).
-- If the browser wipes itself, the app offers **"Reconnect & restore 💾"** on open — one click brings everything back.
-- Export/Import buttons in the header for manual copies.
-- Photos are resized automatically to keep the file lean.
+## The database
 
-## Known limits (single-file version)
+Supabase project **jumpsync**. Tables: horses, riders, health_records, rides, events,
+contacts, ledger, results, messages, dms, plus barns/profiles for accounts. The
+`jumpsync-learning-track.md` companion (in the internship folder) is a hands-on SQL +
+Python tour of this exact database.
 
-- One computer at a time — riders can't log in from their phones yet.
-- Passwords are a gate, not a vault.
-- Show Bulletin and fonts need internet; data does not.
-- The path forward is a hosted rebuild (React + Supabase + Stripe) — roughly $0–25/month at barn scale. The prototype keeps working throughout.
+## Files here
 
-## Files in this folder
-
-- `index.html` — the entire app
-- `logo-concepts.html` — three logo directions (Monogram, Hallmark, Crest)
-- `Logo Ideas/` — inspiration images
+- `index.html` — the entire app (cloud-backed)
+- `logo-concepts-jumpsync.html` — logo directions (Monogram / Hallmark / Crest / Arc)
+- `jumpsync-signet.html` — the JS signet marks at real favicon sizes
 - `README.md` — this file
-- your backup `.json` — the barn's data (don't delete!)
+
+## Honest limits
+
+- Single barn per install right now (everyone who signs up joins the same barn).
+  Multi-barn and per-barn invites are the next step if it goes wider.
+- The demo account is shared and editable — treat the demo barn as a sandbox.
+- Online payments (Stripe) not wired yet — billing tracks charges/payments by hand.
