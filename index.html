@@ -190,12 +190,11 @@
   .photo-thumb { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
   .hphoto { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--mist); }
   .hphoto-ph {
-    width: 100%; height: 110px; border-radius: 8px; margin-bottom: 10px;
-    background: linear-gradient(135deg, var(--mist), #e9efe9 60%, #eee9dd);
-    display: flex; align-items: center; justify-content: center;
-    border: 1px dashed var(--border);
+    width: 100%; height: 160px; border-radius: 8px; margin-bottom: 10px;
+    overflow: hidden; border: 1px solid var(--mist);
   }
-  .hphoto-ph svg { width: 74px; height: 74px; opacity: .55; }
+  .hphoto-ph.hero-ph { height: 190px; width: 190px; border-radius: 10px; }
+  .hphoto-ph svg { width: 100%; height: 100%; display: block; }
   .hero { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
   .hero img { width: 190px; height: 190px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
   .hero .hero-info { flex: 1; min-width: 220px; }
@@ -1223,8 +1222,32 @@ function clearPhoto() {
   const p = document.getElementById('photoPreview');
   if (p) { p.src = ''; p.style.display = 'none'; }
 }
-function ponyPlaceholder() {
-  return '<div class="hphoto-ph"><svg viewBox="0 0 120 120"><use href="#pony"/></svg></div>';
+// Elegant per-horse monogram medallion for horses without a photo — a refined ring,
+// the horse's initial set in the serif face, and a small horseshoe, each in its own
+// rich accent so no two cards look alike. Classic, but clean and modern.
+const PH_ACCENTS = ['#4c5f4a','#7d3b46','#3f5a6b','#8a6d34','#5a4a63','#7a4a32','#3d5c58','#45433b'];
+function horseAccent(name) {
+  let s = 0; const t = (name || '?');
+  for (let i = 0; i < t.length; i++) s = (s * 31 + t.charCodeAt(i)) >>> 0;
+  return PH_ACCENTS[s % PH_ACCENTS.length];
+}
+function horsePlaceholder(h, hero) {
+  const name = (h && h.name) || '';
+  const initial = (name.trim()[0] || '?').toUpperCase();
+  const a = horseAccent(name);
+  return `<div class="hphoto-ph${hero ? ' hero-ph' : ''}">
+    <svg viewBox="0 0 200 160" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${esc(name)}">
+      <rect width="200" height="160" fill="#fbfaf6"/>
+      <rect width="200" height="160" fill="${a}" opacity="0.07"/>
+      <circle cx="100" cy="74" r="47" fill="#fdfdfb" stroke="${a}" stroke-width="1.4"/>
+      <circle cx="100" cy="74" r="42" fill="none" stroke="${a}" stroke-width="0.6" opacity="0.55"/>
+      <text x="100" y="86" text-anchor="middle" font-family="'Cormorant Garamond',Georgia,serif" font-size="46" font-weight="600" fill="${a}">${initial}</text>
+      <g fill="none" stroke="${a}" stroke-width="2.1" stroke-linecap="round" opacity="0.85">
+        <path d="M 92 104 A 8.5 8.5 0 1 1 108 104"/>
+      </g>
+      <circle cx="92" cy="104" r="1.4" fill="${a}"/><circle cx="108" cy="104" r="1.4" fill="${a}"/>
+    </svg>
+  </div>`;
 }
 </script>
 
@@ -1480,7 +1503,7 @@ function renderHorses() {
     const s = weekStats(h.id);
     const care = upcomingCare(h.id)[0];
     return `<div class="card">
-      ${h.photo ? `<img class="hphoto" src="${h.photo}" alt="${esc(h.name)}">` : ponyPlaceholder()}
+      ${h.photo ? `<img class="hphoto" src="${h.photo}" alt="${esc(h.name)}">` : horsePlaceholder(h)}
       <h3 class="entity">${esc(h.name)} ${assignedToMe(h) ? '<span class="badge assigned-badge">Your horse</span>' : ''}</h3>
       ${h.showName ? `<div class="showname">"${esc(h.showName)}"</div>` : ''}
       <div class="meta">${esc(bits) || 'No details yet'}</div>
@@ -1533,7 +1556,7 @@ function showHorseDetail(id) {
   const hero = `
     <div class="card" style="margin-top:12px">
       <div class="hero">
-        ${h.photo ? `<img src="${h.photo}" alt="${esc(h.name)}">` : ''}
+        ${h.photo ? `<img src="${h.photo}" alt="${esc(h.name)}">` : horsePlaceholder(h, true)}
         <div class="hero-info">
           <div class="row">
             <h3 class="entity" style="font-size:1.7rem">${esc(h.name)} ${assignedToMe(h) ? '<span class="badge assigned-badge">Your horse</span>' : ''}</h3>
